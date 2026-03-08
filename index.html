@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="fr" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>FaceBurger Agdal Rabat – Burgers, Tacos & Nuggets Premium</title>
+  <meta name="description" content="FaceBurger à Agdal, Rabat – Les meilleurs burgers artisanaux, tacos et nuggets. Livraison 30 min. Commandez via WhatsApp !"/>
+  <meta property="og:title" content="FaceBurger – Burgers Premium Agdal Rabat"/>
+  <meta property="og:description" content="Burgers, Tacos & Nuggets frais à Agdal, Rabat. Livraison 30 min via WhatsApp."/>
+  <meta property="og:image" content="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=1200&q=80"/>
+  <meta property="og:type" content="restaurant"/>
+  <meta name="theme-color" content="#FF6B35"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800;900&family=Barlow:wght@400;500;600&family=Changa:wght@400;600;700&display=swap" rel="stylesheet"/>
+  <script type="application/ld+json">
+  {
+    "@context":"https://schema.org","@type":"Restaurant",
+    "name":"FaceBurger","cuisine":"American, Burgers",
+    "address":{"@type":"PostalAddress","streetAddress":"Agdal","addressLocality":"Rabat","addressCountry":"MA"},
+    "telephone":"+212666872517","openingHours":"Mo-Su 11:00-23:00",
+    "priceRange":"25-55 MAD","servesCuisine":"Burgers, Tacos, Nuggets"
+  }
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --orange: #FF6B35;
+      --orange-dark: #e55a25;
+      --orange-glow: rgba(255,107,53,0.3);
+      --dark: #1a1a1a;
+      --dark2: #242424;
+      --dark3: #2e2e2e;
+      --cream: #FFF8F4;
+      --text: #f0ece8;
+      --text-muted: #a09890;
+      --border: rgba(255,107,53,0.15);
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: 'Barlow', sans-serif;
+      background: var(--dark);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+    body.ar { font-family: 'Changa', sans-serif; direction: rtl; }
+
+    /* ─── NAV ─── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2rem; height: 68px;
+      background: rgba(26,26,26,0.92);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      transition: all 0.3s;
+    }
+    nav.scrolled { background: rgba(20,20,20,0.98); box-shadow: 0 4px 40px rgba(0,0,0,0.5); }
+    .nav-logo {
+      display: flex; align-items: center; gap: 10px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.7rem; font-weight: 900; letter-spacing: -0.5px;
+      color: var(--text); text-decoration: none;
+    }
+    .nav-logo span { color: var(--orange); }
+    .logo-icon { font-size: 1.8rem; }
+    .nav-links { display: flex; align-items: center; gap: 0.3rem; }
+    .nav-links a {
+      padding: 0.45rem 1rem;
+      color: var(--text-muted); font-size: 0.9rem; font-weight: 500;
+      text-decoration: none; border-radius: 8px;
+      transition: all 0.2s;
+    }
+    .nav-links a:hover { color: var(--text); background: var(--dark3); }
+    .nav-right { display: flex; align-items: center; gap: 0.8rem; }
+    .lang-switcher {
+      display: flex; align-items: center;
+      background: var(--dark3); border: 1px solid var(--border);
+      border-radius: 20px; overflow: hidden; padding: 3px; gap: 2px;
+    }
+    .lang-btn {
+      background: transparent; border: none;
+      color: var(--text-muted); padding: 0.28rem 0.7rem;
+      border-radius: 16px; font-size: 0.78rem; font-weight: 600;
+      cursor: pointer; transition: all 0.2s; font-family: inherit;
+      white-space: nowrap;
+    }
+    .lang-btn:hover { color: var(--text); }
+    .lang-btn.active { background: var(--orange); color: #fff; }
+    .cart-btn {
+      position: relative; background: var(--dark3);
+      border: 1px solid var(--border); color: var(--text);
+      padding: 0.4rem 1rem; border-radius: 8px; cursor: pointer;
+      font-size: 0.9rem; display: flex; align-items: center; gap: 6px;
+      transition: all 0.2s; font-family: inherit;
+    }
+    .cart-btn:hover { border-color: var(--orange); }
+    .cart-count {
+      position: absolute; top: -6px; right: -6px;
+      background: var(--orange); color: #fff;
+      width: 18px; height: 18px; border-radius: 50%;
+      font-size: 0.7rem; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .menu-toggle { display: none; background: none; border: none; color: var(--text); font-size: 1.5rem; cursor: pointer; }
+
+    /* ─── HERO ─── */
+    .hero {
+      height: 100vh; min-height: 600px; position: relative;
+      display: flex; align-items: center; justify-content: center;
+      overflow: hidden;
+    }
+    .hero-slides { position: absolute; inset: 0; }
+    .hero-slide {
+      position: absolute; inset: 0;
+      background-size: cover; background-position: center;
+      opacity: 0; transition: opacity 1.2s ease;
+    }
+    .hero-slide.active { opacity: 1; }
+    .hero-slide::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(26,26,26,0.85) 0%, rgba(26,26,26,0.4) 60%, rgba(26,26,26,0.6) 100%);
+    }
+    .hero-content {
+      position: relative; z-index: 2;
+      max-width: 780px; padding: 2rem;
+      text-align: left;
+      animation: heroIn 1s ease 0.3s both;
+    }
+    @keyframes heroIn { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:none; } }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 6px;
+      background: rgba(255,107,53,0.15); border: 1px solid rgba(255,107,53,0.4);
+      color: var(--orange); padding: 0.4rem 1rem;
+      border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+      letter-spacing: 1px; text-transform: uppercase;
+      margin-bottom: 1.2rem;
+    }
+    .hero-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: clamp(3rem, 8vw, 6rem);
+      font-weight: 900; line-height: 0.95;
+      letter-spacing: -1px; margin-bottom: 0.3rem;
+    }
+    .hero-title .line2 { color: var(--orange); display: block; }
+    .hero-sub {
+      font-size: clamp(1rem, 2.5vw, 1.3rem);
+      color: var(--text-muted); margin: 1rem 0 2rem;
+      max-width: 540px; line-height: 1.5; font-weight: 400;
+    }
+    .hero-ctas { display: flex; gap: 1rem; flex-wrap: wrap; }
+    .btn-primary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: var(--orange); color: #fff;
+      padding: 1rem 2rem; border-radius: 12px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.1rem; font-weight: 700; letter-spacing: 0.5px;
+      text-decoration: none; border: none; cursor: pointer;
+      transition: all 0.3s; box-shadow: 0 4px 30px var(--orange-glow);
+    }
+    .btn-primary:hover { background: var(--orange-dark); transform: translateY(-2px); box-shadow: 0 8px 40px var(--orange-glow); }
+    .btn-secondary {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: transparent; color: var(--text);
+      padding: 1rem 2rem; border-radius: 12px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.1rem; font-weight: 700;
+      text-decoration: none; border: 1.5px solid rgba(255,255,255,0.2);
+      cursor: pointer; transition: all 0.3s;
+    }
+    .btn-secondary:hover { border-color: var(--orange); color: var(--orange); }
+    .hero-stats {
+      position: absolute; bottom: 2.5rem; left: 2rem; right: 2rem;
+      z-index: 2; display: flex; gap: 2rem;
+    }
+    .hero-stat { text-align: left; }
+    .hero-stat-num {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.8rem; font-weight: 900; color: var(--orange);
+    }
+    .hero-stat-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+    .hero-dots {
+      position: absolute; bottom: 3rem; left: 50%; transform: translateX(-50%);
+      z-index: 2; display: flex; gap: 8px;
+    }
+    .hero-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: rgba(255,255,255,0.3); cursor: pointer;
+      transition: all 0.3s;
+    }
+    .hero-dot.active { background: var(--orange); width: 24px; border-radius: 4px; }
+
+    /* ─── SECTIONS ─── */
+    section { padding: 5rem 2rem; }
+    .container { max-width: 1200px; margin: 0 auto; }
+    .section-header { margin-bottom: 3rem; }
+    .section-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      color: var(--orange); font-size: 0.75rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 2px; margin-bottom: 0.7rem;
+    }
+    .section-tag::before { content:''; width:20px; height:2px; background:var(--orange); }
+    .section-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 900; letter-spacing: -0.5px; line-height: 1;
+    }
+    .section-title em { color: var(--orange); font-style: normal; }
+
+    /* ─── MENU CATEGORIES ─── */
+    .menu-section { background: var(--dark2); }
+    .cat-filters {
+      display: flex; gap: 0.5rem; flex-wrap: wrap;
+      margin-bottom: 2.5rem;
+    }
+    .cat-btn {
+      padding: 0.55rem 1.2rem; border-radius: 8px;
+      background: var(--dark3); border: 1px solid var(--border);
+      color: var(--text-muted); font-size: 0.9rem; font-weight: 500;
+      cursor: pointer; transition: all 0.2s; font-family: inherit;
+      display: flex; align-items: center; gap: 6px;
+    }
+    .cat-btn:hover { border-color: var(--orange); color: var(--text); }
+    .cat-btn.active { background: var(--orange); border-color: var(--orange); color: #fff; }
+    .menu-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1.5rem;
+    }
+
+    /* ─── MENU CARD ─── */
+    .menu-card {
+      background: var(--dark3); border-radius: 16px;
+      border: 1px solid var(--border);
+      overflow: hidden; transition: all 0.3s;
+      display: flex; flex-direction: column;
+    }
+    .menu-card:hover { transform: translateY(-4px); border-color: rgba(255,107,53,0.4); box-shadow: 0 12px 40px rgba(0,0,0,0.4); }
+    .card-img-wrap {
+      position: relative; height: 200px; overflow: hidden;
+    }
+    .card-img {
+      width: 100%; height: 100%; object-fit: cover;
+      transition: transform 0.5s;
+    }
+    .menu-card:hover .card-img { transform: scale(1.07); }
+    .card-badge {
+      position: absolute; top: 10px; left: 10px;
+      background: var(--orange); color: #fff;
+      padding: 0.25rem 0.7rem; border-radius: 6px;
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.5px;
+    }
+    .card-body { padding: 1.2rem; flex: 1; display: flex; flex-direction: column; }
+    .card-name {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.3rem; font-weight: 800; margin-bottom: 0.4rem;
+    }
+    .card-desc { font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; flex: 1; margin-bottom: 0.8rem; }
+    .card-ingredients {
+      display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 1rem;
+    }
+    .ingredient-tag {
+      background: rgba(255,107,53,0.08); border: 1px solid rgba(255,107,53,0.2);
+      color: var(--text-muted); padding: 2px 8px;
+      border-radius: 4px; font-size: 0.7rem;
+    }
+    .card-footer { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; }
+    .card-price {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.6rem; font-weight: 900; color: var(--orange);
+    }
+    .card-price span { font-size: 0.9rem; color: var(--text-muted); font-family: 'Barlow', sans-serif; font-weight: 400; }
+    .qty-control { display: flex; align-items: center; gap: 6px; }
+    .qty-btn {
+      width: 30px; height: 30px; border-radius: 8px;
+      background: var(--dark2); border: 1px solid var(--border);
+      color: var(--text); font-size: 1.1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s; font-family: inherit;
+    }
+    .qty-btn:hover { background: var(--orange); border-color: var(--orange); }
+    .qty-num { min-width: 20px; text-align: center; font-weight: 600; font-size: 0.95rem; }
+    .add-btn {
+      flex: 1; background: var(--orange); color: #fff;
+      border: none; border-radius: 8px; padding: 0.6rem;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+      transition: all 0.2s;
+    }
+    .add-btn:hover { background: var(--orange-dark); }
+    .add-btn.added { background: #27ae60; }
+
+    /* ─── CART DRAWER ─── */
+    .cart-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+      z-index: 200; opacity: 0; pointer-events: none;
+      transition: opacity 0.3s; backdrop-filter: blur(4px);
+    }
+    .cart-overlay.open { opacity: 1; pointer-events: all; }
+    .cart-drawer {
+      position: fixed; top: 0; right: -100%; bottom: 0;
+      width: min(420px, 100%); background: var(--dark2);
+      border-left: 1px solid var(--border); z-index: 201;
+      display: flex; flex-direction: column;
+      transition: right 0.4s cubic-bezier(0.4,0,0.2,1);
+      overflow: hidden;
+    }
+    .cart-drawer.open { right: 0; }
+    .cart-header {
+      padding: 1.5rem; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .cart-title { font-family: 'Barlow Condensed', sans-serif; font-size: 1.5rem; font-weight: 800; }
+    .close-btn {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: var(--dark3); border: 1px solid var(--border);
+      color: var(--text); font-size: 1.2rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .cart-items { flex: 1; overflow-y: auto; padding: 1rem; }
+    .cart-empty {
+      text-align: center; padding: 3rem 1rem;
+      color: var(--text-muted);
+    }
+    .cart-empty .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+    .cart-item {
+      display: flex; gap: 1rem; align-items: center;
+      padding: 0.8rem; border-radius: 10px; background: var(--dark3);
+      margin-bottom: 0.7rem; border: 1px solid var(--border);
+    }
+    .cart-item-img { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; }
+    .cart-item-info { flex: 1; }
+    .cart-item-name { font-weight: 600; font-size: 0.9rem; margin-bottom: 4px; }
+    .cart-item-price { color: var(--orange); font-weight: 700; font-size: 0.9rem; }
+    .cart-item-controls { display: flex; align-items: center; gap: 6px; }
+    .cart-footer {
+      padding: 1.5rem; border-top: 1px solid var(--border);
+    }
+    .cart-totals { margin-bottom: 1rem; }
+    .cart-row { display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.9rem; color: var(--text-muted); }
+    .cart-row.total { color: var(--text); font-weight: 700; font-size: 1.1rem; border-top: 1px solid var(--border); padding-top: 0.5rem; margin-top: 0.5rem; }
+    .free-delivery { color: #27ae60 !important; font-size: 0.8rem; }
+    .order-form { display: flex; flex-direction: column; gap: 0.7rem; margin-bottom: 1rem; }
+    .order-input {
+      background: var(--dark3); border: 1px solid var(--border);
+      color: var(--text); padding: 0.7rem 1rem; border-radius: 8px;
+      font-family: inherit; font-size: 0.9rem; outline: none;
+      transition: border-color 0.2s;
+    }
+    .order-input:focus { border-color: var(--orange); }
+    .order-input::placeholder { color: var(--text-muted); }
+    .whatsapp-btn {
+      width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px;
+      background: #25D366; color: #fff; border: none; border-radius: 12px;
+      padding: 1rem; font-family: 'Barlow Condensed', sans-serif;
+      font-size: 1.15rem; font-weight: 700; cursor: pointer;
+      transition: all 0.2s; text-decoration: none;
+    }
+    .whatsapp-btn:hover { background: #1ebe5d; transform: translateY(-1px); }
+
+    /* ─── FEATURES ─── */
+    .features-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 1.5rem;
+    }
+    .feature-card {
+      background: var(--dark2); border: 1px solid var(--border);
+      border-radius: 16px; padding: 2rem 1.5rem; text-align: center;
+      transition: border-color 0.3s;
+    }
+    .feature-card:hover { border-color: rgba(255,107,53,0.5); }
+    .feature-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+    .feature-title { font-family: 'Barlow Condensed', sans-serif; font-size: 1.2rem; font-weight: 800; margin-bottom: 0.5rem; }
+    .feature-desc { font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; }
+
+    /* ─── TESTIMONIALS ─── */
+    .testimonials { background: var(--dark2); }
+    .reviews-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+    .review-card {
+      background: var(--dark3); border: 1px solid var(--border);
+      border-radius: 16px; padding: 1.8rem;
+    }
+    .review-stars { color: var(--orange); font-size: 1rem; margin-bottom: 0.8rem; letter-spacing: 2px; }
+    .review-text { font-size: 0.9rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1rem; font-style: italic; }
+    .review-author { display: flex; align-items: center; gap: 10px; }
+    .review-avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: var(--orange); display: flex; align-items: center; justify-content: center;
+      font-weight: 700; font-size: 1rem; color: #fff;
+      flex-shrink: 0;
+    }
+    .review-name { font-weight: 600; font-size: 0.9rem; }
+    .review-date { font-size: 0.75rem; color: var(--text-muted); }
+
+    /* ─── INFO SECTION ─── */
+    .info-section { background: var(--dark); }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: start; }
+    .info-block { background: var(--dark2); border: 1px solid var(--border); border-radius: 16px; padding: 2rem; }
+    .info-block-title { font-family: 'Barlow Condensed', sans-serif; font-size: 1.4rem; font-weight: 800; margin-bottom: 1.2rem; display: flex; align-items: center; gap: 8px; }
+    .hours-table { width: 100%; }
+    .hours-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+    .hours-row:last-child { border-bottom: none; }
+    .hours-day { color: var(--text-muted); }
+    .hours-time { color: var(--orange); font-weight: 600; }
+    .map-embed {
+      border-radius: 12px; overflow: hidden; height: 250px;
+      border: 1px solid var(--border);
+    }
+    .map-embed iframe { width: 100%; height: 100%; border: none; filter: grayscale(0.3) contrast(1.1); }
+
+    /* ─── ABOUT ─── */
+    .about-section { background: var(--dark2); }
+    .about-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4rem; align-items: center; }
+    .about-img-wrap { position: relative; border-radius: 20px; overflow: hidden; aspect-ratio: 4/3; }
+    .about-img { width: 100%; height: 100%; object-fit: cover; }
+    .about-img-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(255,107,53,0.2), transparent);
+    }
+    .about-stat-badge {
+      position: absolute; bottom: 1.5rem; left: 1.5rem;
+      background: var(--orange); color: #fff; padding: 0.8rem 1.2rem;
+      border-radius: 12px; font-family: 'Barlow Condensed', sans-serif;
+    }
+    .about-stat-badge .num { font-size: 2rem; font-weight: 900; display: block; }
+    .about-stat-badge .lbl { font-size: 0.75rem; opacity: 0.9; }
+    .about-text p { color: var(--text-muted); line-height: 1.8; margin-bottom: 1rem; font-size: 0.95rem; }
+    .about-values { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.5rem; }
+    .value-tag {
+      background: rgba(255,107,53,0.1); border: 1px solid rgba(255,107,53,0.3);
+      color: var(--orange); padding: 0.4rem 1rem; border-radius: 20px;
+      font-size: 0.8rem; font-weight: 600;
+    }
+
+    /* ─── FOOTER ─── */
+    footer {
+      background: #111; border-top: 1px solid var(--border);
+      padding: 3rem 2rem 2rem;
+    }
+    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 3rem; max-width: 1200px; margin: 0 auto; padding-bottom: 2rem; border-bottom: 1px solid var(--border); }
+    .footer-brand .nav-logo { margin-bottom: 1rem; display: inline-flex; }
+    .footer-desc { color: var(--text-muted); font-size: 0.85rem; line-height: 1.6; margin-bottom: 1.2rem; }
+    .footer-social { display: flex; gap: 0.7rem; }
+    .social-btn {
+      width: 36px; height: 36px; border-radius: 8px;
+      background: var(--dark3); border: 1px solid var(--border);
+      color: var(--text-muted); display: flex; align-items: center; justify-content: center;
+      font-size: 1rem; cursor: pointer; text-decoration: none;
+      transition: all 0.2s;
+    }
+    .social-btn:hover { background: var(--orange); border-color: var(--orange); color: #fff; }
+    .footer-col-title { font-family: 'Barlow Condensed', sans-serif; font-size: 1rem; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 1rem; }
+    .footer-links { list-style: none; }
+    .footer-links li { margin-bottom: 0.5rem; }
+    .footer-links a { color: var(--text-muted); text-decoration: none; font-size: 0.85rem; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--orange); }
+    .footer-bottom { max-width: 1200px; margin: 0 auto; padding-top: 1.5rem; display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; }
+    .footer-copy { color: var(--text-muted); font-size: 0.8rem; }
+
+    /* ─── WA FLOAT ─── */
+    .wa-float {
+      position: fixed; bottom: 1.8rem; right: 1.8rem; z-index: 150;
+      display: flex; flex-direction: column; align-items: flex-end; gap: 0.7rem;
+    }
+    .wa-bubble {
+      background: var(--dark2); border: 1px solid var(--border);
+      padding: 0.6rem 1rem; border-radius: 12px 12px 4px 12px;
+      font-size: 0.8rem; color: var(--text-muted);
+      white-space: nowrap; box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      animation: bubblePop 0.5s ease 2s both;
+    }
+    @keyframes bubblePop { from { opacity:0; transform:scale(0.8) translateX(20px); } to { opacity:1; transform:none; } }
+    .wa-btn {
+      width: 58px; height: 58px; border-radius: 50%;
+      background: #25D366; display: flex; align-items: center; justify-content: center;
+      font-size: 1.7rem; box-shadow: 0 4px 30px rgba(37,211,102,0.4);
+      text-decoration: none; transition: all 0.3s;
+      animation: waPulse 2s ease-in-out 3s infinite;
+    }
+    @keyframes waPulse { 0%,100%{box-shadow:0 4px 30px rgba(37,211,102,0.4)} 50%{box-shadow:0 4px 50px rgba(37,211,102,0.7)} }
+    .wa-btn:hover { transform: scale(1.1); }
+
+    /* ─── TOAST ─── */
+    .toast {
+      position: fixed; bottom: 6rem; left: 50%; transform: translateX(-50%) translateY(20px);
+      background: var(--dark2); border: 1px solid #27ae60;
+      color: var(--text); padding: 0.8rem 1.5rem; border-radius: 10px;
+      font-size: 0.9rem; z-index: 300; opacity: 0;
+      transition: all 0.3s; pointer-events: none; white-space: nowrap;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+    /* ─── MOBILE ─── */
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .nav-links.mobile-open {
+        display: flex; flex-direction: column;
+        position: absolute; top: 68px; left: 0; right: 0;
+        background: rgba(26,26,26,0.98); padding: 1rem;
+        border-bottom: 1px solid var(--border);
+        backdrop-filter: blur(20px);
+      }
+      .menu-toggle { display: block; }
+      .hero-content { text-align: center; }
+      .hero-ctas { justify-content: center; }
+      .hero-stats { gap: 1.2rem; justify-content: center; flex-wrap: wrap; }
+      .info-grid, .about-grid { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr; gap: 1.5rem; }
+      .section-header { text-align: center; }
+      .section-tag { justify-content: center; }
+      section { padding: 3.5rem 1.2rem; }
+    }
+    @media (max-width: 480px) {
+      .menu-grid { grid-template-columns: 1fr; }
+      .cart-drawer { width: 100%; }
+      .hero-stats { display: none; }
+    }
+
+    /* ─── SCROLL ANIMATION ─── */
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+    .reveal.visible { opacity: 1; transform: none; }
+
+    /* ─── LOADING ─── */
+    .page-loader {
+      position: fixed; inset: 0; background: var(--dark);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 9999; transition: opacity 0.5s;
+    }
+    .page-loader.hidden { opacity: 0; pointer-events: none; }
+    .loader-logo { font-family: 'Barlow Condensed', sans-serif; font-size: 3rem; font-weight: 900; animation: loaderPulse 0.8s ease-in-out infinite alternate; }
+    .loader-logo span { color: var(--orange); }
+    @keyframes loaderPulse { from { opacity:0.4; transform:scale(0.97); } to { opacity:1; transform:scale(1.03); } }
+  </style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div class="page-loader" id="loader">
+  <div class="loader-logo">Face<span>Burger</span> 🍔</div>
+</div>
+
+<!-- NAVIGATION -->
+<nav id="navbar">
+  <a href="#" class="nav-logo">
+    <span class="logo-icon">🍔</span>
+    Face<span>Burger</span>
+  </a>
+  <div class="nav-links" id="navLinks">
+    <a href="#menu" data-fr="Menu" data-en="Menu" data-ar="القائمة">Menu</a>
+    <a href="#about" data-fr="À Propos" data-en="About" data-ar="عن المطعم">À Propos</a>
+    <a href="#contact" data-fr="Contact" data-en="Contact" data-ar="اتصل بنا">Contact</a>
+  </div>
+  <div class="nav-right">
+    <div class="lang-switcher">
+      <button class="lang-btn active" id="langFR" onclick="setLang('fr')">🇫🇷 FR</button>
+      <button class="lang-btn" id="langEN" onclick="setLang('en')">🇬🇧 EN</button>
+      <button class="lang-btn" id="langAR" onclick="setLang('ar')">🇲🇦 AR</button>
+    </div>
+    <button class="cart-btn" onclick="openCart()">
+      🛒 <span data-fr="Panier" data-en="Cart" data-ar="السلة">Panier</span>
+      <span class="cart-count" id="cartCount">0</span>
+    </button>
+    <button class="menu-toggle" id="menuToggle" onclick="toggleMobile()">☰</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-slides" id="heroSlides">
+    <div class="hero-slide active" style="background-image:url('https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=1400&q=80')"></div>
+    <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=1400&q=80')"></div>
+    <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1565299507177-b0ac66763828?w=1400&q=80')"></div>
+    <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=1400&q=80')"></div>
+    <div class="hero-slide" style="background-image:url('https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=1400&q=80')"></div>
+  </div>
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span>📍</span>
+      <span data-fr="Agdal, Rabat – Maroc" data-en="Agdal, Rabat – Morocco" data-ar="أكدال، الرباط – المغرب">Agdal, Rabat – Maroc</span>
+    </div>
+    <h1 class="hero-title">
+      <span data-fr="Burgers" data-en="Burgers" data-ar="برغر">Burgers</span>
+      <span class="line2" data-fr="Premium." data-en="Premium." data-ar="بريميوم.">Premium.</span>
+    </h1>
+    <p class="hero-sub" data-fr="Tacos, Nuggets & Frites frais à Agdal. Livraison en 30 min directement chez vous via WhatsApp." data-en="Fresh Tacos, Nuggets & Fries in Agdal. Delivered in 30 min right to your door via WhatsApp." data-ar="تاكوس، نغتس وبطاطس طازجة في أكدال. توصيل خلال 30 دقيقة مباشرة إلى باب منزلك عبر واتساب.">
+      Tacos, Nuggets & Frites frais à Agdal. Livraison en 30 min directement chez vous via WhatsApp.
+    </p>
+    <div class="hero-ctas">
+      <button class="btn-primary" onclick="document.getElementById('menu').scrollIntoView({behavior:'smooth'})">
+        🛒 <span data-fr="Commander Maintenant" data-en="Order Now" data-ar="اطلب الآن">Commander Maintenant</span>
+      </button>
+      <a href="https://wa.me/+212666872517?text=Bonjour%20FaceBurger!%20Je%20voudrais%20consulter%20le%20menu%20svp." target="_blank" class="btn-secondary">
+        💬 <span data-fr="Chat WhatsApp" data-en="WhatsApp Chat" data-ar="واتساب">Chat WhatsApp</span>
+      </a>
+    </div>
+  </div>
+  <div class="hero-stats">
+    <div class="hero-stat">
+      <div class="hero-stat-num">500+</div>
+      <div class="hero-stat-label" data-fr="Clients / jour" data-en="Customers / day" data-ar="عميل يومياً">Clients / jour</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">30<small style="font-size:0.9rem">min</small></div>
+      <div class="hero-stat-label" data-fr="Livraison" data-en="Delivery" data-ar="توصيل">Livraison</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">4.9⭐</div>
+      <div class="hero-stat-label" data-fr="Note Google" data-en="Google Rating" data-ar="تقييم جوجل">Note Google</div>
+    </div>
+    <div class="hero-stat">
+      <div class="hero-stat-num">25<small style="font-size:0.9rem">MAD</small></div>
+      <div class="hero-stat-label" data-fr="À partir de" data-en="Starting from" data-ar="ابتداءً من">À partir de</div>
+    </div>
+  </div>
+  <div class="hero-dots" id="heroDots"></div>
+</section>
+
+<!-- FEATURES -->
+<section style="padding: 3rem 2rem; background: var(--dark2);">
+  <div class="container">
+    <div class="features-grid">
+      <div class="feature-card reveal">
+        <div class="feature-icon">🚀</div>
+        <div class="feature-title" data-fr="Livraison 30 min" data-en="30-min Delivery" data-ar="توصيل 30 دقيقة">Livraison 30 min</div>
+        <div class="feature-desc" data-fr="Livraison rapide à Agdal et alentours. Gratuite dès 100 MAD de commande." data-en="Fast delivery in Agdal and surroundings. Free over 100 MAD." data-ar="توصيل سريع في أكدال والمناطق المجاورة. مجاني عند 100 درهم.">Livraison rapide à Agdal et alentours. Gratuite dès 100 MAD.</div>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">🥩</div>
+        <div class="feature-title" data-fr="100% Frais" data-en="100% Fresh" data-ar="100% طازج">100% Frais</div>
+        <div class="feature-desc" data-fr="Viande bœuf fraîche, légumes du jour, pains briochés artisanaux. Aucun surgelé." data-en="Fresh beef, daily vegetables, artisan brioche buns. Zero frozen products." data-ar="لحم بقري طازج، خضروات يومية، خبز بريوش حرفي. لا مجمدات.">Viande bœuf fraîche, légumes du jour, pains artisanaux. Aucun surgelé.</div>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">💬</div>
+        <div class="feature-title" data-fr="Commande WhatsApp" data-en="WhatsApp Order" data-ar="طلب عبر واتساب">Commande WhatsApp</div>
+        <div class="feature-desc" data-fr="Un seul clic pour envoyer votre commande. Confirmation immédiate par notre équipe." data-en="One click to send your order. Instant confirmation from our team." data-ar="نقرة واحدة لإرسال طلبك. تأكيد فوري من فريقنا.">Un seul clic pour envoyer votre commande. Confirmation immédiate.</div>
+      </div>
+      <div class="feature-card reveal">
+        <div class="feature-icon">🏆</div>
+        <div class="feature-title" data-fr="Meilleurs de Rabat" data-en="Best in Rabat" data-ar="الأفضل في الرباط">Meilleurs de Rabat</div>
+        <div class="feature-desc" data-fr="4.9/5 sur Google. Des centaines d'avis positifs de nos fidèles clients d'Agdal." data-en="4.9/5 on Google. Hundreds of positive reviews from our loyal Agdal customers." data-ar="4.9/5 على جوجل. مئات التقييمات الإيجابية من عملائنا في أكدال.">4.9/5 sur Google. Des centaines d'avis positifs de nos fidèles clients.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MENU SECTION -->
+<section class="menu-section" id="menu">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag" data-fr="Notre Carte" data-en="Our Menu" data-ar="قائمتنا">Notre Carte</div>
+      <h2 class="section-title">
+        <span data-fr="Un menu pour " data-en="A menu for " data-ar="قائمة لـ">Un menu pour </span><em data-fr="toutes les envies" data-en="every craving" data-ar="جميع الأذواق">toutes les envies</em>
+      </h2>
+    </div>
+    <div class="cat-filters" id="catFilters"></div>
+    <div class="menu-grid" id="menuGrid"></div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="testimonials" id="reviews">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag" data-fr="Avis Clients" data-en="Customer Reviews" data-ar="تقييمات العملاء">Avis Clients</div>
+      <h2 class="section-title">
+        <span data-fr="Ils " data-en="They " data-ar="هم ">Ils </span><em data-fr="adorent FaceBurger" data-en="love FaceBurger" data-ar="يحبون FaceBurger">adorent FaceBurger</em>
+      </h2>
+    </div>
+    <div class="reviews-grid" id="reviewsGrid"></div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section class="about-section" id="about">
+  <div class="container">
+    <div class="about-grid">
+      <div class="about-img-wrap reveal">
+        <img class="about-img" src="https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=800&q=80" alt="FaceBurger cuisine" loading="lazy"/>
+        <div class="about-img-overlay"></div>
+        <div class="about-stat-badge">
+          <span class="num">2019</span>
+          <span class="lbl" data-fr="Fondé à Agdal" data-en="Founded in Agdal" data-ar="تأسس في أكدال">Fondé à Agdal</span>
+        </div>
+      </div>
+      <div class="about-text reveal">
+        <div class="section-tag" data-fr="Notre Histoire" data-en="Our Story" data-ar="قصتنا">Notre Histoire</div>
+        <h2 class="section-title" style="margin-bottom:1.5rem">
+          <span data-fr="La passion du " data-en="A passion for " data-ar="شغف ">La passion du </span><em data-fr="bon burger" data-en="great burgers" data-ar="البرغر الجيد">bon burger</em>
+        </h2>
+        <p data-fr="Né en 2019 au cœur d'Agdal, FaceBurger est le fruit d'une passion sincère pour la street food authentique et les saveurs généreuses. Nous avons voulu créer un endroit où chaque bouchée raconte une histoire." data-en="Born in 2019 in the heart of Agdal, FaceBurger grew from a genuine passion for authentic street food and bold flavors. We wanted to create a place where every bite tells a story." data-ar="وُلد FaceBurger عام 2019 في قلب أكدال، نتاج شغف حقيقي بالطعام الشعبي الأصيل والنكهات السخية. أردنا خلق مكان تحكي فيه كل لقمة قصة.">
+          Né en 2019 au cœur d'Agdal, FaceBurger est le fruit d'une passion sincère pour la street food authentique et les saveurs généreuses. Nous avons voulu créer un endroit où chaque bouchée raconte une histoire.
+        </p>
+        <p data-fr="Notre équipe sélectionne chaque jour les meilleurs ingrédients : viande de bœuf locale, légumes frais du marché d'Agdal, sauces maison préparées avec amour. Zéro compromis sur la qualité." data-en="Our team selects the finest ingredients every day: local beef, fresh vegetables from the Agdal market, house-made sauces crafted with love. Zero compromise on quality." data-ar="يختار فريقنا كل يوم أفضل المكونات: لحم بقري محلي، خضروات طازجة من سوق أكدال، صلصات منزلية محضرة بحب. لا تنازل عن الجودة.">
+          Notre équipe sélectionne chaque jour les meilleurs ingrédients : viande de bœuf locale, légumes frais, sauces maison préparées avec amour. Zéro compromis sur la qualité.
+        </p>
+        <div class="about-values">
+          <span class="value-tag" data-fr="Frais & Local" data-en="Fresh & Local" data-ar="طازج ومحلي">Frais & Local</span>
+          <span class="value-tag" data-fr="Fait Maison" data-en="Homemade" data-ar="منزلي الصنع">Fait Maison</span>
+          <span class="value-tag" data-fr="Halal Certifié" data-en="Halal Certified" data-ar="حلال معتمد">Halal Certifié ✓</span>
+          <span class="value-tag" data-fr="Livraison Express" data-en="Express Delivery" data-ar="توصيل سريع">Livraison Express</span>
+          <span class="value-tag" data-fr="Prix Juste" data-en="Fair Price" data-ar="سعر عادل">Prix Juste</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INFO & CONTACT -->
+<section class="info-section" id="contact">
+  <div class="container">
+    <div class="section-header reveal" style="text-align:center">
+      <div class="section-tag" data-fr="Infos & Contact" data-en="Info & Contact" data-ar="معلومات واتصال">Infos & Contact</div>
+      <h2 class="section-title"><em data-fr="Venez nous voir" data-en="Come visit us" data-ar="تفضل بزيارتنا">Venez nous voir</em> <span data-fr="à Agdal" data-en="in Agdal" data-ar="في أكدال">à Agdal</span></h2>
+    </div>
+    <div class="info-grid">
+      <div>
+        <div class="info-block reveal" style="margin-bottom:1.5rem">
+          <div class="info-block-title">🕐 <span data-fr="Horaires d'ouverture" data-en="Opening Hours" data-ar="ساعات العمل">Horaires d'ouverture</span></div>
+          <div class="hours-table">
+            <div class="hours-row"><span class="hours-day" data-fr="Lundi – Vendredi" data-en="Monday – Friday" data-ar="الاثنين – الجمعة">Lundi – Vendredi</span><span class="hours-time">11h00 – 23h00</span></div>
+            <div class="hours-row"><span class="hours-day" data-fr="Samedi" data-en="Saturday" data-ar="السبت">Samedi</span><span class="hours-time">11h00 – 23h30</span></div>
+            <div class="hours-row"><span class="hours-day" data-fr="Dimanche" data-en="Sunday" data-ar="الأحد">Dimanche</span><span class="hours-time">12h00 – 23h00</span></div>
+          </div>
+        </div>
+        <div class="info-block reveal">
+          <div class="info-block-title">📞 <span data-fr="Nous contacter" data-en="Contact us" data-ar="اتصل بنا">Nous contacter</span></div>
+          <p style="margin-bottom:1rem;color:var(--text-muted);font-size:0.9rem" data-fr="📍 Agdal, Rabat, Maroc" data-en="📍 Agdal, Rabat, Morocco" data-ar="📍 أكدال، الرباط، المغرب">📍 Agdal, Rabat, Maroc</p>
+          <a href="https://wa.me/+212666872517" target="_blank" class="whatsapp-btn" style="margin-bottom:0.8rem">
+            <span>💬</span> +212 666 872 517
+          </a>
+          <p style="color:var(--text-muted);font-size:0.8rem;text-align:center" data-fr="Réponse en moins de 5 minutes !" data-en="Reply in under 5 minutes!" data-ar="رد خلال أقل من 5 دقائق!">Réponse en moins de 5 minutes !</p>
+        </div>
+      </div>
+      <div class="reveal">
+        <div class="map-embed">
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d26529.67!2d-6.85!3d33.99!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0xda76b871f50c5c1%3A0x79907df98721f2cd!2sAgdal%2C%20Rabat!5e0!3m2!1sfr!2sma!4v1700000000000"
+            loading="lazy" allowfullscreen title="FaceBurger Agdal Rabat">
+          </iframe>
+        </div>
+        <div class="info-block" style="margin-top:1.5rem">
+          <div class="info-block-title">🎁 <span data-fr="Offres & Promos" data-en="Deals & Promos" data-ar="عروض وتخفيضات">Offres & Promos</span></div>
+          <div style="background:rgba(255,107,53,0.1);border:1px solid rgba(255,107,53,0.3);border-radius:10px;padding:1rem;margin-bottom:0.7rem">
+            <div style="font-weight:700;margin-bottom:0.3rem" data-fr="🚚 Livraison GRATUITE" data-en="🚚 FREE Delivery" data-ar="🚚 توصيل مجاني">🚚 Livraison GRATUITE</div>
+            <div style="color:var(--text-muted);font-size:0.83rem" data-fr="Pour toute commande supérieure à 100 MAD" data-en="On all orders over 100 MAD" data-ar="لكل طلب يتجاوز 100 درهم">Pour toute commande supérieure à 100 MAD</div>
+          </div>
+          <div style="background:rgba(255,107,53,0.1);border:1px solid rgba(255,107,53,0.3);border-radius:10px;padding:1rem">
+            <div style="font-weight:700;margin-bottom:0.3rem" data-fr="🎉 Happy Hour 15h-18h" data-en="🎉 Happy Hour 3PM-6PM" data-ar="🎉 هابي أور 15-18">🎉 Happy Hour 15h-18h</div>
+            <div style="color:var(--text-muted);font-size:0.83rem" data-fr="-10% sur tous les menus combos" data-en="-10% on all combo meals" data-ar="خصم 10% على جميع قوائم الكومبو">-10% sur tous les menus combos</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <a href="#" class="nav-logo">🍔 Face<span>Burger</span></a>
+      <p class="footer-desc" data-fr="Burgers premium, Tacos & Nuggets à Agdal, Rabat. Frais, savoureux, livré en 30 min via WhatsApp." data-en="Premium Burgers, Tacos & Nuggets in Agdal, Rabat. Fresh, tasty, delivered in 30 min via WhatsApp." data-ar="برغر بريميوم، تاكوس ونغتس في أكدال، الرباط. طازج، لذيذ، توصيل 30 دقيقة عبر واتساب.">Burgers premium, Tacos & Nuggets à Agdal, Rabat. Frais, savoureux, livré en 30 min via WhatsApp.</p>
+      <div class="footer-social">
+        <a class="social-btn" href="https://wa.me/+212666872517" target="_blank" title="WhatsApp">💬</a>
+        <a class="social-btn" href="#" title="Instagram">📸</a>
+        <a class="social-btn" href="#" title="Facebook">👤</a>
+        <a class="social-btn" href="#" title="TikTok">🎵</a>
+      </div>
+    </div>
+    <div>
+      <div class="footer-col-title" data-fr="Menu" data-en="Menu" data-ar="القائمة">Menu</div>
+      <ul class="footer-links">
+        <li><a href="#menu" data-fr="Burgers" data-en="Burgers" data-ar="برغر">Burgers</a></li>
+        <li><a href="#menu" data-fr="Sandwiches" data-en="Sandwiches" data-ar="ساندويتش">Sandwiches</a></li>
+        <li><a href="#menu" data-fr="Tacos" data-en="Tacos" data-ar="تاكوس">Tacos</a></li>
+        <li><a href="#menu" data-fr="Nuggets" data-en="Nuggets" data-ar="نغتس">Nuggets</a></li>
+        <li><a href="#menu" data-fr="Frites" data-en="Fries" data-ar="بطاطس">Frites</a></li>
+        <li><a href="#menu" data-fr="Combos" data-en="Combos" data-ar="كومبو">Combos</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title" data-fr="Info" data-en="Info" data-ar="معلومات">Info</div>
+      <ul class="footer-links">
+        <li><a href="#about" data-fr="À Propos" data-en="About" data-ar="عن المطعم">À Propos</a></li>
+        <li><a href="#contact" data-fr="Horaires" data-en="Hours" data-ar="ساعات العمل">Horaires</a></li>
+        <li><a href="#contact" data-fr="Livraison" data-en="Delivery" data-ar="التوصيل">Livraison</a></li>
+        <li><a href="https://wa.me/+212666872517" target="_blank" data-fr="Commander" data-en="Order" data-ar="اطلب الآن">Commander</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p class="footer-copy" data-fr="© 2025 FaceBurger Agdal Rabat. Tous droits réservés." data-en="© 2025 FaceBurger Agdal Rabat. All rights reserved." data-ar="© 2025 FaceBurger أكدال الرباط. جميع الحقوق محفوظة.">© 2025 FaceBurger Agdal Rabat. Tous droits réservés.</p>
+    <p class="footer-copy" data-fr="Fait avec ❤️ à Agdal, Rabat 🇲🇦" data-en="Made with ❤️ in Agdal, Rabat 🇲🇦" data-ar="صنع بـ ❤️ في أكدال، الرباط 🇲🇦">Fait avec ❤️ à Agdal, Rabat 🇲🇦</p>
+  </div>
+</footer>
+
+<!-- WHATSAPP FLOAT -->
+<div class="wa-float">
+  <div class="wa-bubble" id="waBubble" data-fr="Commandez en 1 clic ! 🍔" data-en="Order in 1 click! 🍔" data-ar="اطلب بنقرة واحدة! 🍔">Commandez en 1 clic ! 🍔</div>
+  <a href="https://wa.me/+212666872517?text=Bonjour%20FaceBurger!%20Je%20voudrais%20passer%20une%20commande%20svp." target="_blank" class="wa-btn" title="Commander via WhatsApp">💬</a>
+</div>
+
+<!-- CART DRAWER -->
+<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-header">
+    <h2 class="cart-title">🛒 <span data-fr="Votre Panier" data-en="Your Cart" data-ar="سلتك">Votre Panier</span></h2>
+    <button class="close-btn" onclick="closeCart()">✕</button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-footer" id="cartFooter" style="display:none">
+    <div class="cart-totals">
+      <div class="cart-row"><span data-fr="Sous-total" data-en="Subtotal" data-ar="المجموع الفرعي">Sous-total</span><span id="cartSubtotal">0 MAD</span></div>
+      <div class="cart-row"><span data-fr="Livraison" data-en="Delivery" data-ar="التوصيل">Livraison</span><span id="cartDelivery">15 MAD</span></div>
+      <div class="cart-row total"><span data-fr="Total" data-en="Total" data-ar="الإجمالي">Total</span><span id="cartTotal">0 MAD</span></div>
+      <div class="cart-row free-delivery" id="freeDeliveryMsg" style="display:none" data-fr="🎉 Livraison gratuite appliquée !" data-ar="🎉 تم تطبيق التوصيل المجاني!">🎉 Livraison gratuite appliquée !</div>
+    </div>
+    <div class="order-form">
+      <input class="order-input" type="text" id="orderName" placeholder="Votre prénom / اسمك" />
+      <input class="order-input" type="tel" id="orderPhone" placeholder="Votre numéro WhatsApp / رقم واتساب" />
+      <input class="order-input" type="text" id="orderAddress" placeholder="Adresse de livraison, Agdal / عنوان التوصيل" />
+    </div>
+    <a href="#" class="whatsapp-btn" id="waOrderBtn" onclick="sendWhatsAppOrder(event)">
+      <span>💬</span> <span data-fr="Commander via WhatsApp" data-en="Order via WhatsApp" data-ar="اطلب عبر واتساب">Commander via WhatsApp</span>
+    </a>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────
+const WA = "+212666872517";
+const LANG = { current: "fr" };
+
+const categories = [
+  { id: "all", fr: "Tout voir", en: "All", ar: "الكل", emoji: "✨" },
+  { id: "burgers", fr: "Burgers", en: "Burgers", ar: "برغر", emoji: "🍔" },
+  { id: "sandwiches", fr: "Sandwiches", en: "Sandwiches", ar: "ساندويتش", emoji: "🥪" },
+  { id: "tacos", fr: "Tacos", en: "Tacos", ar: "تاكوس", emoji: "🌮" },
+  { id: "nuggets", fr: "Nuggets", en: "Nuggets", ar: "نغتس", emoji: "🍗" },
+  { id: "frites", fr: "Frites & Sides", en: "Fries & Sides", ar: "بطاطس", emoji: "🍟" },
+  { id: "combos", fr: "Combos", en: "Combos", ar: "كومبو", emoji: "🎁" },
+  { id: "boissons", fr: "Boissons", en: "Drinks", ar: "مشروبات", emoji: "🥤" },
+];
+
+const items = [
+  { id:1, cat:"burgers", featured:true, name:"Classic Burger", nameAr:"برغر كلاسيك", price:25, badge:"Best Seller",
+    img:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&q=80",
+    desc:"Grilled 150g beef patty, fresh crispy lettuce, juicy tomato, pickles and our secret house sauce in toasted brioche buns. Our timeless classic.",
+    descFr:"Steak bœuf 150g grillé, salade fraîche, tomate juteuse, cornichons et sauce maison entre deux buns briochés toastés. Notre indétrônable.",
+    descAr:"شريحة لحم 150 جرام مشوية، خس طازج، طماطم، مخللات وصلصة منزلية في خبزة بريوش." },
+  { id:2, cat:"burgers", featured:true, name:"Cheese Burger", nameAr:"تشيز برغر", price:28, badge:"Populaire",
+    img:"https://images.unsplash.com/photo-1553979459-d2229ba7433b?w=600&q=80",
+    desc:"150g beef patty topped with generous melted cheddar, lettuce, tomato and our house burger sauce. The ultimate cheesy classic.",
+    descFr:"Bœuf 150g + cheddar fondant généreux, salade, tomate, sauce burger maison. L'incontournable fromager.",
+    descAr:"لحم 150 جرام + جبن تشيدر سخي، خس، طماطم وصلصة برغر." },
+  { id:3, cat:"burgers", featured:true, name:"Double Burger", nameAr:"دبل برغر", price:38, badge:"XXL",
+    img:"https://images.unsplash.com/photo-1594212699903-ec8a3eca50f5?w=600&q=80",
+    desc:"Two 150g beef patties, double cheddar, caramelized onions, lettuce, tomato and double sauce. For serious appetites only!",
+    descFr:"Deux steaks 150g, double cheddar, oignons confits, salade, tomate et sauce double. Pour les vrais appétits !",
+    descAr:"شريحتان 150 جرام، جبن مزدوج، بصل مكرمل، خس، طماطم وصلصة مزدوجة." },
+  { id:4, cat:"burgers", featured:true, name:"BBQ Burger", nameAr:"برغر BBQ", price:35, badge:"Smoky",
+    img:"https://images.unsplash.com/photo-1565299507177-b0ac66763828?w=600&q=80",
+    desc:"150g beef, crispy bacon, melted cheddar, caramelized onions and smoky house BBQ sauce. A taste of deep America.",
+    descFr:"Bœuf 150g, bacon croustillant, cheddar fondu, oignons caramélisés et sauce BBQ fumée maison.",
+    descAr:"لحم 150 جرام، جبن تشيدر، بصل مكرمل وصلصة BBQ مدخنة." },
+  { id:5, cat:"burgers", featured:true, name:"Spicy Burger", nameAr:"سبايسي برغر", price:32, badge:"🌶️ Hot",
+    img:"https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=600&q=80",
+    desc:"150g beef, fresh jalapeños, spicy cheddar, lettuce and house sriracha sauce. A fireworks of flavors for heat lovers!",
+    descFr:"Bœuf 150g, jalapeños frais, cheddar pimenté, salade et sauce sriracha maison. Feu d'artifice de piments !",
+    descAr:"لحم 150 جرام، هالابينو، جبن حار وصلصة سريراشا منزلية." },
+  { id:6, cat:"burgers", featured:true, name:"Up Burger", nameAr:"أب برغر", price:30, badge:"Signature",
+    img:"https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=600&q=80",
+    desc:"Our signature! Premium 150g beef, secret herbed Up sauce, fresh arugula, sun-dried tomato and creamy cheese.",
+    descFr:"Notre signature ! Bœuf premium 150g, sauce Up secrète aux herbes, roquette fraîche, tomate séchée et fromage crémeux.",
+    descAr:"توقيعنا! لحم فاخر 150 جرام، صلصة Up السرية، جرجير طازج وجبن كريمي." },
+  { id:7, cat:"burgers", name:"Mushroom Burger", nameAr:"مشروم برغر", price:33,
+    img:"https://images.unsplash.com/photo-1550317138-10000687a72b?w=600&q=80",
+    desc:"Garlic-sautéed mushrooms, 150g beef, melted Swiss gruyère and creamy mushroom sauce. A forest-inspired delight.",
+    descFr:"Champignons sautés à l'ail, bœuf 150g, gruyère suisse fondu et sauce champignon crémeuse.",
+    descAr:"فطر مقلي بالثوم، لحم 150 جرام، جبن غروير وصلصة فطر كريمية." },
+  { id:8, cat:"burgers", name:"Chicken Crispy", nameAr:"كريسبي تشيكن", price:30,
+    img:"https://images.unsplash.com/photo-1606755962773-d324e0a13086?w=600&q=80",
+    desc:"Golden crispy breaded chicken fillet, house coleslaw, fresh tomato and creamy ranch sauce. The ultimate chicken burger.",
+    descFr:"Filet poulet pané croustillant doré, coleslaw maison, tomate fraîche et sauce ranch crémeuse.",
+    descAr:"فيليه دجاج مقرمش، كولسلو منزلي وصلصة رانش." },
+  { id:9, cat:"burgers", name:"Veggie Burger", nameAr:"فيجي برغر", price:28,
+    img:"https://images.unsplash.com/photo-1520072959219-c595dc870360?w=600&q=80",
+    desc:"Plant-based patty, fresh avocado, lettuce, cherry tomato and mint-yogurt sauce. 100% vegetarian and 100% delicious!",
+    descFr:"Galette végétale, avocat frais, salade, tomate cerise et sauce yaourt-menthe. 100% végétarien !",
+    descAr:"كعكة خضروات، أفوكادو، خس وصلصة زبادي نعناع. 100% نباتي!" },
+  { id:10, cat:"burgers", name:"Ranch Burger", nameAr:"رانش برغر", price:32,
+    img:"https://images.unsplash.com/photo-1551615593-ef5fe247e8f7?w=600&q=80",
+    desc:"150g beef, generous ranch sauce, crispy bacon, melted cheddar and iceberg lettuce. An American classic reinvented.",
+    descFr:"Bœuf 150g, sauce ranch généreuse, bacon croustillant, cheddar fondu et laitue iceberg.",
+    descAr:"لحم 150 جرام، صلصة رانش، جبن تشيدر وخس." },
+  { id:11, cat:"sandwiches", featured:true, name:"Poulet Vert", nameAr:"الدجاج الأخضر", price:28,
+    img:"https://images.unsplash.com/photo-1481070414801-51fd732d7184?w=600&q=80",
+    desc:"Tender grilled chicken, creamy avocado, fresh arugula, cucumber, green pepper and herb sauce. Freshness in every bite.",
+    descFr:"Poulet grillé tendre, avocat crémeux, roquette fraîche, concombre, poivron vert et sauce herbes.",
+    descAr:"دجاج مشوي طري، أفوكادو كريمي، جرجير، خيار وصلصة أعشاب." },
+  { id:12, cat:"sandwiches", name:"Steak Sandwich", nameAr:"ستيك ساندويتش", price:32,
+    img:"https://images.unsplash.com/photo-1600891964599-f61ba0e24092?w=600&q=80",
+    desc:"Thinly sliced beef, caramelized onions, grilled red peppers, melted cheese and creamy pepper sauce. A gourmet sandwich.",
+    descFr:"Bœuf tranché fin, oignons caramélisés, poivrons rouges grillés, fromage fondu et sauce au poivre.",
+    descAr:"لحم بقري رفيع، بصل مكرمل، فلفل مشوي وصلصة فلفل." },
+  { id:13, cat:"sandwiches", name:"Sandwich Olive", nameAr:"ساندويتش الزيتون", price:25,
+    img:"https://images.unsplash.com/photo-1509722747041-616f39b57569?w=600&q=80",
+    desc:"Premium tuna, marinated black and green olives, tomato, lettuce, hard-boiled egg and house tapenade sauce.",
+    descFr:"Thon premium, olives marinées, tomate, salade, œuf dur et sauce tapenade méditerranéenne.",
+    descAr:"تونة فاخرة، زيتون متبل، طماطم، خس وبيض مسلوق." },
+  { id:14, cat:"sandwiches", name:"Kefta Sandwich", nameAr:"ساندويتش الكفتة", price:27,
+    img:"https://images.unsplash.com/photo-1561758033-48d52648ae8b?w=600&q=80",
+    desc:"Spiced Moroccan beef kefta, onions, fresh cilantro, house harissa and tomato in a warm baguette. Authentic Moroccan flavors.",
+    descFr:"Kefta bœuf marocaine épicée, oignons, coriandre fraîche, harissa et tomate dans une baguette chaude.",
+    descAr:"كفتة بقرية مغربية، بصل، كزبرة طازجة وحريصة في خبزة." },
+  { id:15, cat:"tacos", featured:true, name:"Taco Bœuf", nameAr:"تاكو لحم بقري", price:18,
+    img:"https://images.unsplash.com/photo-1565299585323-38d6b0865b47?w=600&q=80",
+    desc:"Mexican-spiced ground beef, fresh lettuce, tomato, shredded cheese, sour cream and house salsa in a soft tortilla.",
+    descFr:"Bœuf haché épicé à la mexicaine, salade, tomate, fromage râpé, crème fraîche et salsa maison.",
+    descAr:"لحم مفروم بتوابل مكسيكية، خس، طماطم، جبن مبشور وسالسا." },
+  { id:16, cat:"tacos", featured:true, name:"Taco Poulet", nameAr:"تاكو دجاج", price:20, badge:"⭐ Top",
+    img:"https://images.unsplash.com/photo-1552332386-f8dd00dc2f85?w=600&q=80",
+    desc:"Chipotle-marinated grilled chicken, fresh house guacamole, lettuce, cheese and pico de gallo. A Mexican flavor explosion.",
+    descFr:"Poulet chipotle mariné, guacamole frais maison, salade, fromage et pico de gallo.",
+    descAr:"دجاج تشيبوتلي، غواكامولي طازج، خس وجبن." },
+  { id:17, cat:"tacos", name:"Taco Nuggets", nameAr:"تاكو نغتس", price:22,
+    img:"https://images.unsplash.com/photo-1600891964092-4316c288032e?w=600&q=80",
+    desc:"Crispy chicken nuggets, lettuce, tomato, BBQ sauce and ranch sauce in a soft tortilla. The perfect fast-food fusion.",
+    descFr:"Nuggets croustillants, salade, tomate, sauce BBQ et sauce ranch dans une tortilla souple.",
+    descAr:"نغتس مقرمشة، خس، طماطم وصلصة BBQ في تورتيلا." },
+  { id:18, cat:"tacos", name:"Taco Mixte", nameAr:"تاكو مشكل", price:24,
+    img:"https://images.unsplash.com/photo-1613514785940-daed07799d9b?w=600&q=80",
+    desc:"Spiced beef AND grilled chicken, double cheese, guacamole and salsa verde. The ultimate taco for the indecisive!",
+    descFr:"Bœuf épicé + poulet grillé, double fromage, guacamole et salsa verde. Le taco ultime !",
+    descAr:"لحم مع دجاج، جبنتان وغواكامولي. التاكو الأمثل!" },
+  { id:19, cat:"nuggets", featured:true, name:"Nuggets 6 pcs", nameAr:"نغتس 6 قطع", price:22,
+    img:"https://images.unsplash.com/photo-1562967914-608f82629710?w=600&q=80",
+    desc:"6 golden crispy chicken nuggets, 100% fillet, served with your choice of dipping sauce (BBQ, Ranch, Ketchup).",
+    descFr:"6 nuggets poulet 100% filet, panure croustillante dorée, sauce au choix (BBQ, Ranch, Ketchup).",
+    descAr:"6 قطع نغتس دجاج 100% فيليه مع صلصة اختيارية." },
+  { id:20, cat:"nuggets", featured:true, name:"Nuggets 12 pcs", nameAr:"نغتس 12 قطع", price:38, badge:"Family",
+    img:"https://images.unsplash.com/photo-1567620832903-9fc6debc209f?w=600&q=80",
+    desc:"12 golden crispy nuggets, perfect for sharing! 100% chicken fillet with 2 dipping sauces of your choice.",
+    descFr:"12 nuggets dorés croustillants, idéaux pour partager avec 2 sauces au choix.",
+    descAr:"12 قطعة ذهبية مقرمشة للمشاركة مع صلصتين." },
+  { id:21, cat:"nuggets", name:"Chicken Fingers 5 pcs", nameAr:"تشيكن فينغرز", price:25,
+    img:"https://images.unsplash.com/photo-1640719028782-8230f1bdc2b6?w=600&q=80",
+    desc:"5 long herb-marinated chicken fillet strips, light crispy breading served with house dip sauce. Longer and more tender than nuggets.",
+    descFr:"5 longs strips de filet mariné aux herbes, panure légère croustillante et sauce dip maison.",
+    descAr:"5 شرائح فيليه متبل بالأعشاب مع صلصة غمس." },
+  { id:22, cat:"frites", name:"Frites Petites", nameAr:"بطاطس صغيرة", price:12,
+    img:"https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=600&q=80",
+    desc:"Crispy house-made fries, fresh hand-cut potatoes, double-fried to perfection with sea salt.",
+    descFr:"Frites maison croustillantes, pommes de terre fraîches coupées à la main, sel de mer.",
+    descAr:"بطاطس منزلية مقرمشة، بطاطا طازجة مقطعة يدوياً بملح البحر." },
+  { id:23, cat:"frites", name:"Frites Grandes", nameAr:"بطاطس كبيرة", price:18,
+    img:"https://images.unsplash.com/photo-1518013431117-eb1465fa5752?w=600&q=80",
+    desc:"Large generous portion of house fries, crispy outside, fluffy inside, seasoned with sea salt and herbs.",
+    descFr:"Grande portion généreuse, croustillantes, moelleuses, assaisonnées au sel de mer et herbes.",
+    descAr:"حصة كبيرة سخية، مقرمشة وطرية بملح البحر والأعشاب." },
+  { id:24, cat:"frites", name:"Onion Rings", nameAr:"حلقات البصل", price:15,
+    img:"https://images.unsplash.com/photo-1639024471283-03518883512d?w=600&q=80",
+    desc:"Sweet onion rings in spiced breading, fried golden brown and served with house ranch sauce.",
+    descFr:"Rondelles d'oignons doux en panure épicée, frites à l'or brun avec sauce ranch maison.",
+    descAr:"حلقات بصل بخبز متبل ذهبية مع صلصة رانش." },
+  { id:25, cat:"combos", featured:true, name:"Menu Classic", nameAr:"منيو كلاسيك", price:45, badge:"Économique",
+    img:"https://images.unsplash.com/photo-1551782450-a2132b4ba21d?w=600&q=80",
+    desc:"Classic Burger + Small Fries + Drink 33cl. The ideal combo for a quick and satisfying lunch break.",
+    descFr:"Classic Burger + Frites petites + Boisson 33cl. Le combo idéal pour une pause déjeuner satisfaisante.",
+    descAr:"برغر كلاسيك + بطاطس صغيرة + مشروب 33 سل. الكومبو المثالي." },
+  { id:26, cat:"combos", featured:true, name:"Menu Double XL", nameAr:"منيو دبل XL", price:55, badge:"🔥 Best Value",
+    img:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&q=80",
+    desc:"Double Burger + Large Fries + Drink 50cl. Best value on the menu — you get what you pay for and more!",
+    descFr:"Double Burger + Frites grandes + Boisson 50cl. Le meilleur rapport qualité-prix de la carte !",
+    descAr:"دبل برغر + بطاطس كبيرة + مشروب 50 سل. أفضل قيمة!" },
+  { id:27, cat:"combos", name:"Menu BBQ/Spicy", nameAr:"منيو BBQ/سبايسي", price:50,
+    img:"https://images.unsplash.com/photo-1561758033-48d52648ae8b?w=600&q=80",
+    desc:"Your choice of BBQ or Spicy Burger + Large Fries + Drink 50cl. For those who like bold, intense flavors.",
+    descFr:"BBQ ou Spicy Burger au choix + Frites grandes + Boisson 50cl. Pour explorer des saveurs intenses.",
+    descAr:"برغر BBQ أو سبايسي + بطاطس كبيرة + مشروب." },
+  { id:28, cat:"boissons", name:"Coca-Cola 33cl", nameAr:"كوكا كولا", price:10,
+    img:"https://images.unsplash.com/photo-1622483767028-3f66f32aef97?w=600&q=80",
+    desc:"Ice-cold Coca-Cola can 33cl. The timeless classic to go with your burger.",
+    descFr:"Coca-Cola bien frais en canette 33cl. L'accompagnement classique de votre burger.",
+    descAr:"كوكا كولا باردة 33 سل. الرفيق الكلاسيك." },
+  { id:29, cat:"boissons", name:"Jus Orange Frais", nameAr:"عصير برتقال طازج", price:15,
+    img:"https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?w=600&q=80",
+    desc:"Freshly squeezed orange juice, 100% natural, no added sugar. The healthy, vitamin-packed choice!",
+    descFr:"Jus d'orange pressé minute, 100% frais, sans sucre ajouté. La touche vitaminée !",
+    descAr:"عصير برتقال معصور لحظياً، 100% طازج بدون سكر." },
+];
+
+const reviews = [
+  { name:"Youssef B.", initial:"Y", rating:5, date:"Mars 2025", fr:"Le Double Burger est une masterpiece ! La viande est fondante, les sauces maison sont incroyables. Livraison en 25 min à Agdal. 10/10, je recommande à tous mes amis !", en:"The Double Burger is a masterpiece! The meat is so tender, the house sauces are incredible. Delivered in 25 min to Agdal. 10/10, I recommend it to all my friends!", ar:"الدبل برغر تحفة فنية! اللحم طري والصلصات رائعة. توصيل خلال 25 دقيقة. 10/10!" },
+  { name:"Fatima Z.", initial:"F", rating:5, date:"Fév 2025", fr:"Les Tacos Poulet sont absolument délicieux. Le guacamole maison change tout ! Et le service WhatsApp est ultra-rapide. FaceBurger c'est mon spot préféré à Rabat.", en:"The Chicken Tacos are absolutely delicious. The house guacamole makes all the difference! And the WhatsApp ordering is super fast. FaceBurger is my favorite spot in Rabat.", ar:"تاكو الدجاج لذيذ جداً والغواكامولي المنزلي رائع! خدمة واتساب سريعة جداً." },
+  { name:"Karim A.", initial:"K", rating:5, date:"Jan 2025", fr:"Les nuggets 12 pcs pour partager en famille, c'est parfait ! Super croustillants avec les sauces. Et la livraison gratuite dès 100 MAD, c'est top. Bravo FaceBurger !", en:"The 12-piece nuggets for sharing with family are perfect! Super crispy with the sauces. And free delivery over 100 MAD is a great deal. Well done FaceBurger!", ar:"نغتس 12 قطعة للعائلة رائع! مقرمش جداً والتوصيل المجاني فوق 100 درهم ممتاز." },
+  { name:"Sara M.", initial:"S", rating:5, date:"Jan 2025", fr:"Le Veggie Burger m'a bluffée ! Je ne m'attendais pas à autant de saveurs dans un burger végétarien. L'avocat et la sauce yaourt-menthe, wow ! Parfait pour mes amies végétariennes.", en:"The Veggie Burger blew me away! I didn't expect so much flavor in a vegetarian burger. The avocado and mint-yogurt sauce — wow! Perfect for my vegetarian friends.", ar:"البرغر النباتي فاجأني! لم أتوقع هذا القدر من النكهة في برغر نباتي. الأفوكادو وصلصة النعناع رائعان." },
+  { name:"Hassan O.", initial:"H", rating:5, date:"Déc 2024", fr:"Spicy Burger comme je les aime ! Le jalapeño frais et la sriracha maison c'est une combinaison gagnante. Livraison toujours à l'heure à Agdal. Mon incontournable du vendredi soir !", en:"Spicy Burger just how I like it! Fresh jalapeño and house sriracha is a winning combo. Delivery always on time in Agdal. My Friday night must-have!", ar:"سبايسي برغر كما أحب! الهالابينو الطازج والسريراشا المنزلية مزيج رائع." },
+  { name:"Nadia R.", initial:"N", rating:5, date:"Déc 2024", fr:"Le Menu Double XL est une affaire ! Pour 55 MAD vous avez un festin complet. Mon mari et moi commandons FaceBurger chaque semaine. La qualité est toujours constante, c'est rare !", en:"The Double XL Menu is such a deal! For 55 MAD you get a full feast. My husband and I order FaceBurger every week. Consistent quality — that's rare!", ar:"منيو دبل XL صفقة رائعة! مقابل 55 درهم وجبة كاملة. نطلب FaceBurger كل أسبوع." },
+];
+
+// ── CART STATE ────────────────────────────────────────────────────
+let cart = JSON.parse(localStorage.getItem('fb_cart') || '{}');
+let currentCat = "all";
+
+function saveCart() { localStorage.setItem('fb_cart', JSON.stringify(cart)); }
+function getTotalItems() { return Object.values(cart).reduce((s,i)=>s+i.qty,0); }
+function getSubtotal() { return Object.values(cart).reduce((s,i)=>s+i.price*i.qty,0); }
+
+// ── LANG ──────────────────────────────────────────────────────────
+function setLang(lang) {
+  LANG.current = lang;
+  const isAr = lang === "ar";
+  document.body.classList.toggle("ar", isAr);
+  document.documentElement.lang = lang;
+  document.documentElement.dir = isAr ? "rtl" : "ltr";
+  // Update active button
+  ["FR","EN","AR"].forEach(l => {
+    const btn = document.getElementById("lang"+l);
+    if (btn) btn.classList.toggle("active", l.toLowerCase() === lang);
+  });
+  // Update all data-translated elements
+  document.querySelectorAll("[data-fr]").forEach(el => {
+    el.textContent = el.dataset[lang] || el.dataset.fr;
+  });
+  renderMenu(currentCat);
+  renderCategories();
+  renderReviews();
+  renderCart();
+}
+
+// ── NAV ───────────────────────────────────────────────────────────
+window.addEventListener('scroll', () => {
+  document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 60);
+});
+function toggleMobile() {
+  document.getElementById('navLinks').classList.toggle('mobile-open');
+}
+
+// ── HERO SLIDER ───────────────────────────────────────────────────
+let heroIdx = 0;
+const slides = document.querySelectorAll('.hero-slide');
+const dotsEl = document.getElementById('heroDots');
+slides.forEach((_,i)=>{ const d=document.createElement('div'); d.className='hero-dot'+(i===0?' active':''); d.onclick=()=>goSlide(i); dotsEl.appendChild(d); });
+function goSlide(n) {
+  slides[heroIdx].classList.remove('active');
+  dotsEl.children[heroIdx].classList.remove('active');
+  heroIdx = (n + slides.length) % slides.length;
+  slides[heroIdx].classList.add('active');
+  dotsEl.children[heroIdx].classList.add('active');
+}
+setInterval(()=>goSlide(heroIdx+1), 4500);
+
+// ── RENDER MENU ───────────────────────────────────────────────────
+function renderCategories() {
+  const f = document.getElementById('catFilters');
+  f.innerHTML = categories.map(c=>`
+    <button class="cat-btn${c.id==='all'?' active':''}" onclick="filterCat('${c.id}',this)">
+      ${c.emoji} ${c[LANG.current]||c.fr}
+    </button>`).join('');
+}
+
+function filterCat(id, btn) {
+  currentCat = id;
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderMenu(id);
+}
+
+function renderMenu(cat) {
+  const grid = document.getElementById('menuGrid');
+  const filtered = cat === 'all' ? items : items.filter(i=>i.cat===cat);
+  grid.innerHTML = filtered.map(item=>{
+    const qty = cart[item.id]?.qty || 0;
+    const name = LANG.current === 'ar' ? item.nameAr : item.name;
+    const desc = LANG.current === 'ar' ? item.descAr : (LANG.current === 'en' ? item.desc : (item.descFr || item.desc));
+    const addLabel = LANG.current === 'ar' ? 'أضف' : (LANG.current === 'en' ? 'Add' : 'Ajouter');
+    return `
+    <div class="menu-card reveal" id="card-${item.id}">
+      <div class="card-img-wrap">
+        <img class="card-img" src="${item.img}" alt="${name}" loading="lazy"/>
+        ${item.badge?`<div class="card-badge">${item.badge}</div>`:''}
+      </div>
+      <div class="card-body">
+        <div class="card-name">${name}</div>
+        <div class="card-desc">${desc}</div>
+        <div class="card-footer">
+          <div class="card-price">${item.price}<span> MAD</span></div>
+          <div style="display:flex;gap:6px;align-items:center">
+            <div class="qty-control">
+              <button class="qty-btn" onclick="changeQty(${item.id},-1)">−</button>
+              <span class="qty-num" id="qty-${item.id}">${qty}</span>
+              <button class="qty-btn" onclick="changeQty(${item.id},1)">+</button>
+            </div>
+            <button class="add-btn${qty>0?' added':''}" id="addbtn-${item.id}" onclick="addItem(${item.id})">
+              ${qty>0?'✓':'+'} ${addLabel}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+  observeReveal();
+}
+
+// ── CART LOGIC ────────────────────────────────────────────────────
+function addItem(id) {
+  const item = items.find(i=>i.id===id);
+  if (!cart[id]) cart[id] = { id, name:item.name, nameAr:item.nameAr, price:item.price, img:item.img, qty:0 };
+  cart[id].qty++;
+  saveCart();
+  updateCartUI(id);
+  const addedMsg = LANG.current==='ar' ? `تمت إضافة ${item.nameAr} 🎉` : (LANG.current==='en' ? `${item.name} added! 🎉` : `${item.name} ajouté ! 🎉`);
+  showToast(addedMsg);
+}
+
+function changeQty(id, delta) {
+  const item = items.find(i=>i.id===id);
+  if (!cart[id]) cart[id] = { id, name:item.name, nameAr:item.nameAr, price:item.price, img:item.img, qty:0 };
+  cart[id].qty = Math.max(0, cart[id].qty + delta);
+  if (cart[id].qty === 0) delete cart[id];
+  saveCart();
+  updateCartUI(id);
+}
+
+function updateCartUI(id) {
+  const qty = cart[id]?.qty || 0;
+  const qEl = document.getElementById(`qty-${id}`);
+  const bEl = document.getElementById(`addbtn-${id}`);
+  if (qEl) qEl.textContent = qty;
+  if (bEl) {
+    bEl.className = 'add-btn' + (qty>0?' added':'');
+    bEl.textContent = (qty>0?'✓':'+') + ' ' + (LANG.current==='ar'?'أضف':'Ajouter');
+  }
+  document.getElementById('cartCount').textContent = getTotalItems();
+}
+
+function renderCart() {
+  const container = document.getElementById('cartItems');
+  const footer = document.getElementById('cartFooter');
+  const cartEntries = Object.values(cart);
+  document.getElementById('cartCount').textContent = getTotalItems();
+  const emptyMsg = LANG.current==='ar' ? 'سلتك فارغة. أضف شيئاً لذيذاً!' : (LANG.current==='en' ? 'Your cart is empty. Add something delicious!' : 'Votre panier est vide. Ajoutez quelque chose de délicieux !');
+  if (cartEntries.length === 0) {
+    container.innerHTML = `<div class="cart-empty"><div class="empty-icon">🛒</div><p>${emptyMsg}</p></div>`;
+    footer.style.display = 'none'; return;
+  }
+  footer.style.display = 'block';
+  container.innerHTML = cartEntries.map(ci=>`
+    <div class="cart-item">
+      <img class="cart-item-img" src="${ci.img}" alt="${ci.name}"/>
+      <div class="cart-item-info">
+        <div class="cart-item-name">${LANG.current==='ar'?ci.nameAr:ci.name}</div>
+        <div class="cart-item-price">${ci.price * ci.qty} MAD</div>
+      </div>
+      <div class="cart-item-controls">
+        <button class="qty-btn" onclick="cartQty(${ci.id},-1)">−</button>
+        <span class="qty-num">${ci.qty}</span>
+        <button class="qty-btn" onclick="cartQty(${ci.id},1)">+</button>
+      </div>
+    </div>`).join('');
+  const sub = getSubtotal();
+  const delivery = sub >= 100 ? 0 : 15;
+  const freeLabel = LANG.current==='ar' ? 'مجاني' : (LANG.current==='en' ? 'Free' : 'Gratuit');
+  const freeMsg = LANG.current==='ar' ? '🎉 تم تطبيق التوصيل المجاني!' : (LANG.current==='en' ? '🎉 Free delivery applied!' : '🎉 Livraison gratuite appliquée !');
+  document.getElementById('cartSubtotal').textContent = sub + ' MAD';
+  document.getElementById('cartDelivery').textContent = delivery === 0 ? freeLabel : delivery + ' MAD';
+  document.getElementById('cartTotal').textContent = (sub + delivery) + ' MAD';
+  document.getElementById('freeDeliveryMsg').style.display = sub >= 100 ? 'flex' : 'none';
+  document.getElementById('freeDeliveryMsg').textContent = freeMsg;
+}
+
+function cartQty(id, delta) {
+  if (!cart[id]) return;
+  cart[id].qty = Math.max(0, cart[id].qty + delta);
+  if (cart[id].qty === 0) delete cart[id];
+  saveCart();
+  renderCart();
+  updateCartUI(id);
+}
+
+function openCart() { document.getElementById('cartDrawer').classList.add('open'); document.getElementById('cartOverlay').classList.add('open'); renderCart(); }
+function closeCart() { document.getElementById('cartDrawer').classList.remove('open'); document.getElementById('cartOverlay').classList.remove('open'); }
+
+// ── WHATSAPP ORDER ────────────────────────────────────────────────
+function sendWhatsAppOrder(e) {
+  e.preventDefault();
+  const cartEntries = Object.values(cart);
+  const emptyWarn = LANG.current==='ar' ? '⚠️ أضف عناصر إلى سلتك أولاً' : (LANG.current==='en' ? '⚠️ Add items to your cart first!' : '⚠️ Ajoutez des articles à votre panier !');
+  const fillWarn = LANG.current==='ar' ? '⚠️ أدخل اسمك وعنوانك' : (LANG.current==='en' ? '⚠️ Please enter your name and address' : '⚠️ Veuillez entrer votre nom et adresse');
+  if (cartEntries.length === 0) { showToast(emptyWarn); return; }
+  const name = document.getElementById('orderName').value.trim();
+  const phone = document.getElementById('orderPhone').value.trim();
+  const address = document.getElementById('orderAddress').value.trim();
+  if (!name || !address) { showToast(fillWarn); return; }
+  const sub = getSubtotal();
+  const delivery = sub >= 100 ? 0 : 15;
+  const total = sub + delivery;
+  const lines = cartEntries.map(i=>`• ${LANG.current==='ar'?i.nameAr:i.name} ×${i.qty} = ${i.price*i.qty} MAD`).join('\n');
+  const deliveryNote = delivery === 0 ? 'Delivery: FREE 🎉' : `Delivery: ${delivery} MAD`;
+  const msg = encodeURIComponent(`🍔 *New FaceBurger Order!*\n\n${lines}\n\nSubtotal: ${sub} MAD\n${deliveryNote}\n*TOTAL: ${total} MAD*\n\nName: ${name}\nPhone: ${phone||'Not provided'}\nAddress: ${address}, Agdal, Rabat`);
+  window.open(`https://wa.me/${WA}?text=${msg}`, '_blank');
+}
+
+// ── REVIEWS ───────────────────────────────────────────────────────
+function renderReviews() {
+  document.getElementById('reviewsGrid').innerHTML = reviews.map(r=>`
+    <div class="review-card reveal">
+      <div class="review-stars">${'★'.repeat(r.rating)}</div>
+      <p class="review-text">"${LANG.current==='ar'?r.ar:(LANG.current==='en'?r.en:r.fr)}"</p>
+      <div class="review-author">
+        <div class="review-avatar">${r.initial}</div>
+        <div><div class="review-name">${r.name}</div><div class="review-date">${r.date}</div></div>
+      </div>
+    </div>`).join('');
+}
+
+// ── REVEAL ────────────────────────────────────────────────────────
+function observeReveal() {
+  const observer = new IntersectionObserver(entries=>{
+    entries.forEach(e=>{ if(e.isIntersecting){ e.target.classList.add('visible'); observer.unobserve(e.target); } });
+  }, { threshold:0.1 });
+  document.querySelectorAll('.reveal:not(.visible)').forEach(el=>observer.observe(el));
+}
+
+// ── TOAST ─────────────────────────────────────────────────────────
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 2800);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', ()=>{
+  setTimeout(()=>{ document.getElementById('loader').classList.add('hidden'); }, 800);
+  renderCategories();
+  renderMenu('all');
+  renderReviews();
+  observeReveal();
+  // Close WA bubble after 8s
+  setTimeout(()=>{ const b=document.getElementById('waBubble'); if(b) b.style.opacity='0'; }, 8000);
+});
+</script>
+</body>
+</html>
