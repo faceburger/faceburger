@@ -27,6 +27,9 @@ Setup (restaurant PC)
 
 Notes
 -----
+- Printing: tries PowerShell ReadAllText + Out-Printer first; if that fails (e.g. PowerShell 2
+  without Out-Printer), falls back to Windows PRINT.EXE.
+- stop.bat uses Get-WmiObject (works on Windows 7 / PowerShell 2). Do not use Get-CimInstance there.
 - Requires Windows PowerShell and a working local printer setup.
 - This app prints only orders where printed_at is NULL.
 - If printing fails, printed_at remains NULL and will retry.

@@ -4,6 +4,7 @@ var fs = require("fs").promises;
 var os = require("os");
 var path = require("path");
 var spawn = require("child_process").spawn;
+var exec = require("child_process").exec;
 var Pool = require("pg").Pool;
 
 var DATABASE_URL = process.env.DATABASE_URL;
@@ -183,16 +184,38 @@ function runPowerShell(command) {
     );
 
     var stderr = "";
+    var stdout = "";
     child.stderr.on("data", function (chunk) {
       stderr += chunk.toString();
+    });
+    child.stdout.on("data", function (chunk) {
+      stdout += chunk.toString();
     });
 
     child.on("close", function (code) {
       if (code === 0) resolve();
-      else reject(new Error(stderr || "PowerShell exited with code " + code));
+      else reject(new Error((stderr + stdout).trim() || "PowerShell exited with code " + code));
     });
 
     child.on("error", reject);
+  });
+}
+
+/** Fallback when Out-Printer is missing (PS3+) or fails — uses Windows PRINT.EXE */
+function runCmdPrint(filePath) {
+  return new Promise(function (resolve, reject) {
+    var safePrinter = PRINTER_NAME.replace(/"/g, "");
+    var safePath = filePath.replace(/"/g, "");
+    var cmdline =
+      'cmd /c print /D:"' + safePrinter + '" "' + safePath + '"';
+    exec(cmdline, { windowsHide: true, timeout: 60000 }, function (err, stdout, stderr) {
+      var out = ((stderr || "") + (stdout || "")).trim();
+      if (err) {
+        reject(new Error(out || (err && err.message) || String(err)));
+        return;
+      }
+      resolve();
+    });
   });
 }
 
@@ -202,10 +225,10 @@ async function sendToPrinter(content, label) {
   var filePath = path.join(os.tmpdir(), filename);
   await fs.writeFile(filePath, content, "utf8");
 
-  // PowerShell 2.0 (Windows 7) has no Get-Content -Raw. Use .NET ReadAllText instead.
+  // PS 2.0: no Get-Content -Raw. Out-Printer exists in PS 3+; on Win7 PS2 it may be missing — we fallback to PRINT.EXE.
   var escapedPath = filePath.replace(/'/g, "''");
   var escapedPrinter = PRINTER_NAME.replace(/'/g, "''");
-  var command =
+  var psCommand =
     "[System.IO.File]::ReadAllText('" +
     escapedPath +
     "') | Out-Printer -Name '" +
@@ -213,7 +236,13 @@ async function sendToPrinter(content, label) {
     "'";
 
   try {
-    await runPowerShell(command);
+    try {
+      await runPowerShell(psCommand);
+    } catch (psErr) {
+      var msg = psErr && psErr.message ? psErr.message : String(psErr);
+      console.error("[printer-listener] Out-Printer path failed, trying PRINT.EXE:", msg);
+      await runCmdPrint(filePath);
+    }
   } finally {
     try {
       await fs.unlink(filePath);
@@ -238,7 +267,26 @@ async function markPrinted(orderId) {
   await pool.query("UPDATE orders SET printed_at = NOW() WHERE id = $1", [orderId]);
 }
 
+function normalizeOrderRow(order) {
+  if (order && typeof order.items === "string") {
+    try {
+      order.items = JSON.parse(order.items);
+    } catch (_e) {
+      order.items = [];
+    }
+  }
+  if (order && typeof order.order_meta === "string") {
+    try {
+      order.order_meta = JSON.parse(order.order_meta);
+    } catch (_e) {
+      order.order_meta = {};
+    }
+  }
+  return order;
+}
+
 async function processOrder(order) {
+  order = normalizeOrderRow(order);
   console.log("[printer-listener] Printing order #" + order.id + "...");
   var kitchen = buildKitchenTicket(order);
   var receipt = buildReceiptTicket(order);
