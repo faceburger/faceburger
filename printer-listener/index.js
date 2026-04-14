@@ -202,9 +202,15 @@ async function sendToPrinter(content, label) {
   var filePath = path.join(os.tmpdir(), filename);
   await fs.writeFile(filePath, content, "utf8");
 
+  // PowerShell 2.0 (Windows 7) has no Get-Content -Raw. Use .NET ReadAllText instead.
   var escapedPath = filePath.replace(/'/g, "''");
   var escapedPrinter = PRINTER_NAME.replace(/'/g, "''");
-  var command = "Get-Content -Raw -Path '" + escapedPath + "' | Out-Printer -Name '" + escapedPrinter + "'";
+  var command =
+    "[System.IO.File]::ReadAllText('" +
+    escapedPath +
+    "') | Out-Printer -Name '" +
+    escapedPrinter +
+    "'";
 
   try {
     await runPowerShell(command);
