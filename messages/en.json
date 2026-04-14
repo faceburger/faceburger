@@ -1,0 +1,126 @@
+{
+  "lang": {
+    "fr": "FR",
+    "ar": "AR",
+    "en": "EN"
+  },
+  "item": {
+    "unavailable": "Unavailable",
+    "addButton": "+"
+  },
+  "sheet": {
+    "addToCart": "Add to cart",
+    "required": "Required",
+    "for": "for",
+    "decreaseQty": "Decrease quantity",
+    "dismissItem": "Close without adding to cart"
+  },
+  "cart": {
+    "title": "My cart",
+    "heading": "Cart",
+    "viewCart": "View cart",
+    "subtitle": "{count, plural, =0 {No items in your cart} one {1 item in your cart} other {# items in your cart}}",
+    "feesNote": "Delivery and taxes are calculated at the next step.",
+    "close": "Close",
+    "remove": "Remove",
+    "empty": "Your cart is empty",
+    "clear": "Clear cart",
+    "order": "Order now",
+    "subtotal": "Subtotal",
+    "total": "Total",
+    "currency": "MAD"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "name": "Full name",
+    "phone": "Phone",
+    "address": "Delivery address",
+    "submit": "Send via WhatsApp",
+    "back": "Back",
+    "namePlaceholder": "Your full name",
+    "phonePlaceholder": "06XXXXXXXX",
+    "addressPlaceholder": "Your full address",
+    "summary": "Order summary",
+    "nameRequired": "Name is required",
+    "phoneRequired": "Phone is required",
+    "addressRequired": "Address is required"
+  },
+  "checkoutFlow": {
+    "title": "Complete your order",
+    "summarySubtitle": "Order summary",
+    "currency": "MAD",
+    "optional": "optional",
+    "pickupNoMap": "For pickup, no delivery address is needed. Add any notes below if you like.",
+    "pickupAddress": "Pickup at restaurant",
+    "dineInAddress": "Dine in at restaurant",
+    "steps": {
+      "info": "Information",
+      "service": "Service & Payment",
+      "location": "Location",
+      "summary": "Summary"
+    },
+    "labels": {
+      "name": "Name",
+      "lastName": "Last name",
+      "firstName": "First name",
+      "phone": "Phone",
+      "comment": "Comment",
+      "address": "Address",
+      "floor": "Floor",
+      "door": "Door / Apartment",
+      "deliveryExtra": "Additional delivery instructions",
+      "subtotal": "Subtotal",
+      "deliveryFee": "Delivery fee",
+      "total": "Total",
+      "fullName": "Full name"
+    },
+    "placeholders": {
+      "phone": "Number without country code",
+      "name": "First and last name",
+      "comment": "Optional — notes about your order",
+      "address": "Complete or adjust the delivery address"
+    },
+    "service": {
+      "title": "Service type",
+      "delivery": "Delivery",
+      "deliveryDesc": "We deliver to your address. Delivery fees are added to the total.",
+      "pickup": "Takeaway",
+      "pickupDesc": "Pick up at the restaurant — no delivery address.",
+      "dineIn": "Dine in",
+      "dineInDesc": "Eat at the restaurant — no delivery address."
+    },
+    "payment": {
+      "title": "Payment method",
+      "cash": "Cash",
+      "cashDesc": "Pay cash on delivery or pickup."
+    },
+    "map": {
+      "locateMe": "Locate me",
+      "plan": "Map",
+      "satellite": "Satellite"
+    },
+    "placeType": {
+      "title": "Place type",
+      "house": "House",
+      "apartment": "Apartment",
+      "office": "Office",
+      "other": "Other"
+    },
+    "recap": {
+      "service": "Service",
+      "payment": "Payment",
+      "floor": "Floor",
+      "door": "Door / Apartment"
+    },
+    "actions": {
+      "home": "Back to home",
+      "next": "Next",
+      "back": "Back",
+      "placeOrder": "Place order"
+    },
+    "whatsapp": {
+      "title": "New FaceBurger order",
+      "orderLines": "Items"
+    }
+  }
+}

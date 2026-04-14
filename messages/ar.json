@@ -1,0 +1,126 @@
+{
+  "lang": {
+    "fr": "FR",
+    "ar": "AR",
+    "en": "EN"
+  },
+  "item": {
+    "unavailable": "غير متوفر",
+    "addButton": "+"
+  },
+  "sheet": {
+    "addToCart": "أضف إلى السلة",
+    "required": "مطلوب",
+    "for": "لـ",
+    "decreaseQty": "تقليل الكمية",
+    "dismissItem": "إغلاق دون إضافة إلى السلة"
+  },
+  "cart": {
+    "title": "سلة التسوق",
+    "heading": "السلة",
+    "viewCart": "عرض السلة",
+    "subtitle": "{count, plural, =0 {لا توجد عناصر في سلتك} one {عنصر واحد في سلتك} other {# عناصر في سلتك}}",
+    "feesNote": "يُحتسب التوصيل والضرائب في الخطوة التالية.",
+    "close": "إغلاق",
+    "remove": "إزالة",
+    "empty": "سلتك فارغة",
+    "clear": "إفراغ السلة",
+    "order": "اطلب الآن",
+    "subtotal": "المجموع الفرعي",
+    "total": "المجموع",
+    "currency": "درهم"
+  },
+  "checkout": {
+    "title": "إتمام الطلب",
+    "name": "الاسم الكامل",
+    "phone": "رقم الهاتف",
+    "address": "عنوان التوصيل",
+    "submit": "إرسال عبر واتساب",
+    "back": "رجوع",
+    "namePlaceholder": "اسمك الكامل",
+    "phonePlaceholder": "06XXXXXXXX",
+    "addressPlaceholder": "عنوانك الكامل",
+    "summary": "ملخص الطلب",
+    "nameRequired": "الاسم مطلوب",
+    "phoneRequired": "الهاتف مطلوب",
+    "addressRequired": "العنوان مطلوب"
+  },
+  "checkoutFlow": {
+    "title": "إتمام الطلب",
+    "summarySubtitle": "ملخص الطلب",
+    "currency": "درهم",
+    "optional": "اختياري",
+    "pickupNoMap": "للاستلام من المطعم لا حاجة لعنوان التوصيل. يمكنك إضافة ملاحظات أدناه.",
+    "pickupAddress": "استلام من المطعم",
+    "dineInAddress": "تناول في المطعم",
+    "steps": {
+      "info": "المعلومات",
+      "service": "الخدمة والدفع",
+      "location": "الموقع",
+      "summary": "الملخص"
+    },
+    "labels": {
+      "name": "الاسم",
+      "lastName": "الاسم",
+      "firstName": "الاسم الأول",
+      "phone": "الهاتف",
+      "comment": "ملاحظة",
+      "address": "العنوان",
+      "floor": "الطابق",
+      "door": "الباب / الشقة",
+      "deliveryExtra": "تعليمات توصيل إضافية",
+      "subtotal": "المجموع الفرعي",
+      "deliveryFee": "رسوم التوصيل",
+      "total": "الإجمالي",
+      "fullName": "الاسم الكامل"
+    },
+    "placeholders": {
+      "phone": "الرقم بدون المفتاح",
+      "name": "الاسم الكامل",
+      "comment": "اختياري — ملاحظات على الطلب",
+      "address": "أكمل أو عدّل عنوان التوصيل"
+    },
+    "service": {
+      "title": "نوع الخدمة",
+      "delivery": "توصيل",
+      "deliveryDesc": "نوصل إلى عنوانك. تُضاف رسوم التوصيل إلى الإجمالي.",
+      "pickup": "استلام",
+      "pickupDesc": "تستلم من المطعم — دون عنوان توصيل.",
+      "dineIn": "في المطعم",
+      "dineInDesc": "تتناول الطعام في المطعم — دون عنوان توصيل."
+    },
+    "payment": {
+      "title": "طريقة الدفع",
+      "cash": "نقدًا",
+      "cashDesc": "الدفع نقدًا عند التوصيل أو الاستلام."
+    },
+    "map": {
+      "locateMe": "تحديد موقعي",
+      "plan": "خريطة",
+      "satellite": "قمر صناعي"
+    },
+    "placeType": {
+      "title": "نوع المكان",
+      "house": "منزل",
+      "apartment": "شقة",
+      "office": "مكتب",
+      "other": "أخرى"
+    },
+    "recap": {
+      "service": "نوع الخدمة",
+      "payment": "طريقة الدفع",
+      "floor": "الطابق",
+      "door": "الباب / الشقة"
+    },
+    "actions": {
+      "home": "الرئيسية",
+      "next": "التالي",
+      "back": "رجوع",
+      "placeOrder": "اطلب"
+    },
+    "whatsapp": {
+      "title": "طلب جديد FaceBurger",
+      "orderLines": "التفاصيل"
+    }
+  }
+}

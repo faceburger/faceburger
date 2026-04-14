@@ -1,0 +1,126 @@
+{
+  "lang": {
+    "fr": "FR",
+    "ar": "AR",
+    "en": "EN"
+  },
+  "item": {
+    "unavailable": "Indisponible",
+    "addButton": "+"
+  },
+  "sheet": {
+    "addToCart": "Ajouter au panier",
+    "required": "Requis",
+    "for": "pour",
+    "decreaseQty": "Diminuer la quantité",
+    "dismissItem": "Fermer sans ajouter au panier"
+  },
+  "cart": {
+    "title": "Mon panier",
+    "heading": "Panier",
+    "viewCart": "Voir le panier",
+    "subtitle": "{count, plural, =0 {Aucun article dans votre panier} one {1 article dans votre panier} other {# articles dans votre panier}}",
+    "feesNote": "Livraison et taxes à l'étape suivante.",
+    "close": "Fermer",
+    "remove": "Retirer",
+    "empty": "Votre panier est vide",
+    "clear": "Vider le panier",
+    "order": "Commander",
+    "subtotal": "Sous-total",
+    "total": "Total",
+    "currency": "MAD"
+  },
+  "checkout": {
+    "title": "Finaliser la commande",
+    "name": "Nom complet",
+    "phone": "Téléphone",
+    "address": "Adresse de livraison",
+    "submit": "Envoyer via WhatsApp",
+    "back": "Retour",
+    "namePlaceholder": "Votre nom complet",
+    "phonePlaceholder": "06XXXXXXXX",
+    "addressPlaceholder": "Votre adresse complète",
+    "summary": "Résumé",
+    "nameRequired": "Le nom est requis",
+    "phoneRequired": "Le téléphone est requis",
+    "addressRequired": "L'adresse est requise"
+  },
+  "checkoutFlow": {
+    "title": "Finaliser la commande",
+    "summarySubtitle": "Récapitulatif de la commande",
+    "currency": "MAD",
+    "optional": "optionnel",
+    "pickupNoMap": "Pour le retrait sur place, l'adresse de livraison n'est pas nécessaire. Indiquez éventuellement des précisions ci-dessous.",
+    "pickupAddress": "Retrait au restaurant",
+    "dineInAddress": "Sur place au restaurant",
+    "steps": {
+      "info": "Informations",
+      "service": "Service & Paiement",
+      "location": "Localisation",
+      "summary": "Récapitulatif"
+    },
+    "labels": {
+      "name": "Nom",
+      "lastName": "Nom",
+      "firstName": "Prénom",
+      "phone": "Téléphone",
+      "comment": "Commentaire",
+      "address": "Adresse",
+      "floor": "Étage",
+      "door": "Porte / Appartement",
+      "deliveryExtra": "Informations complémentaires de livraison",
+      "subtotal": "Sous-total",
+      "deliveryFee": "Frais de livraison",
+      "total": "Total",
+      "fullName": "Nom complet"
+    },
+    "placeholders": {
+      "phone": "Numéro sans indicatif",
+      "name": "Prénom et nom",
+      "comment": "Optionnel — précisions sur votre commande",
+      "address": "Complétez ou ajustez l'adresse de livraison"
+    },
+    "service": {
+      "title": "Mode de service",
+      "delivery": "Livraison",
+      "deliveryDesc": "Nous livrons à votre adresse. Les frais de livraison s'ajoutent au total.",
+      "pickup": "À emporter",
+      "pickupDesc": "Vous récupérez la commande au restaurant — pas d'adresse de livraison.",
+      "dineIn": "Sur place",
+      "dineInDesc": "Vous dégustez au restaurant — pas d'adresse de livraison."
+    },
+    "payment": {
+      "title": "Mode de paiement",
+      "cash": "Espèces",
+      "cashDesc": "Paiement en espèces à la livraison ou au retrait."
+    },
+    "map": {
+      "locateMe": "Me localiser",
+      "plan": "Plan",
+      "satellite": "Satellite"
+    },
+    "placeType": {
+      "title": "Type de lieu",
+      "house": "Maison",
+      "apartment": "Appartement",
+      "office": "Bureau",
+      "other": "Autre"
+    },
+    "recap": {
+      "service": "Mode de service",
+      "payment": "Mode de paiement",
+      "floor": "Étage",
+      "door": "Porte / Appartement"
+    },
+    "actions": {
+      "home": "Retour à l'accueil",
+      "next": "Suivant",
+      "back": "Retour",
+      "placeOrder": "Commander"
+    },
+    "whatsapp": {
+      "title": "Nouvelle commande FaceBurger",
+      "orderLines": "Detail"
+    }
+  }
+}
