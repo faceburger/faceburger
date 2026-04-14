@@ -13,7 +13,8 @@ Only after both print successfully, the order is marked as printed.
 
 Setup (restaurant PC)
 ---------------------
-1. Install Node.js LTS
+1. Install Node.js
+   - For Windows 7, use Node v12.22.12 (x64)
 2. Open this folder
 3. Copy .env.example to .env
 4. Fill .env values:
