@@ -12,8 +12,8 @@ type Props = {
 const FALLBACK_BG =
   "linear-gradient(135deg, #52525b 0%, #3f3f46 50%, #27272a 100%)";
 
-const CARD_H = 56;
-const CARD_W = 168;
+const CARD_H = 48;
+const CARD_W = 140;
 const GAP = 12; // gap-3
 
 export function CategoryTabs({ categories, locale }: Props) {
@@ -23,8 +23,6 @@ export function CategoryTabs({ categories, locale }: Props) {
   const stickyRef = useRef<HTMLDivElement>(null);
   const lockUntil = useRef(0);
 
-  const firstCat = categories[0];
-  const restCats = categories.slice(1);
 
   function getCategoryName(cat: MenuCategory) {
     const names = cat.name as { fr: string; ar: string; en: string };
@@ -47,7 +45,7 @@ export function CategoryTabs({ categories, locale }: Props) {
       return;
     }
 
-    const target = (idx - 1) * (CARD_W + GAP);
+    const target = idx * (CARD_W + GAP);
     const max = Math.max(0, container.scrollWidth - container.clientWidth);
     container.scrollTo({ left: Math.min(max, target), behavior: "smooth" });
   }
@@ -124,7 +122,7 @@ export function CategoryTabs({ categories, locale }: Props) {
           className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/45 to-black/25"
           aria-hidden
         />
-        <span className="absolute inset-0 flex items-center justify-center px-2 text-center text-[12px] font-semibold leading-snug text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)]">
+        <span className="absolute inset-0 flex items-center justify-center px-2 text-center text-[14px] font-semibold leading-snug text-white drop-shadow-[0_1px_3px_rgba(0,0,0,0.85)]">
           {name}
         </span>
       </button>
@@ -134,20 +132,10 @@ export function CategoryTabs({ categories, locale }: Props) {
   return (
     <div
       ref={stickyRef}
-      className="sticky top-0 z-40 bg-white dark:bg-[#121316] isolate"
+      className="sticky top-0 z-40 bg-[#F0F2F5] dark:bg-[#1e1f20] isolate"
     >
-      <div className="flex items-center py-3 pl-4 pr-0 mt-10">
-        {/* First card — px-2 py-2 gives room for active ring/shadow on all sides */}
-        {firstCat && (
-          <div
-            className="flex shrink-0 px-2 py-2"
-            style={{ marginRight: GAP }}
-          >
-            <CategoryCard cat={firstCat} />
-          </div>
-        )}
-
-        {/* Scrollable rest */}
+      <div className="flex items-center py-3 pl-4 pr-0">
+        {/* All cards scrollable */}
         <div
           ref={scrollRef}
           className="no-scrollbar min-h-0 flex-1"
@@ -161,7 +149,7 @@ export function CategoryTabs({ categories, locale }: Props) {
             className="flex w-max items-center px-2 py-2"
             style={{ gap: GAP }}
           >
-            {restCats.map((cat) => (
+            {categories.map((cat) => (
               <CategoryCard key={cat.id} cat={cat} />
             ))}
           </div>

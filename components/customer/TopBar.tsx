@@ -30,7 +30,7 @@ export function TopBar() {
 
   return (
     <header
-      className="fixed left-0 right-0 top-0 z-50 border-b border-[#E4E6EB] bg-white dark:border-[#3e4042] dark:bg-[#121316]"
+      className="fixed left-0 right-0 top-0 z-50 border-b border-[#E4E6EB] bg-white dark:border-[#3e4042] dark:bg-[#242526]"
       style={{ height: 56 }}
     >
       {/* Centered content — max 480px, matching menu width */}

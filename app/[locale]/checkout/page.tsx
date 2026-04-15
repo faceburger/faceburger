@@ -8,5 +8,5 @@ export default async function CheckoutPage({
 }) {
   const { locale } = await params;
   const settings = await getSettings();
-  return <CheckoutClient locale={locale} whatsappNumber={settings.whatsapp_number} />;
+  return <CheckoutClient locale={locale} whatsappNumber={settings.whatsapp_number} settings={settings} />;
 }

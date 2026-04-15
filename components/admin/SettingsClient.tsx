@@ -16,6 +16,15 @@ export function SettingsClient({ settings }: Props) {
     restaurant_hours: settings.restaurant_hours ?? "",
     cover_image_url: settings.cover_image_url ?? "",
     whatsapp_number: settings.whatsapp_number ?? "",
+    restaurant_lat: settings.restaurant_lat ?? "34.0084",
+    restaurant_lng: settings.restaurant_lng ?? "-6.8539",
+  });
+  const [tiers, setTiers] = useState<{ maxKm: number; fee: number }[]>(() => {
+    try {
+      return JSON.parse(settings.delivery_fee_tiers || "[]");
+    } catch {
+      return [{ maxKm: 5, fee: 10 }, { maxKm: 10, fee: 20 }];
+    }
   });
   const [uploading, setUploading] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -41,6 +50,8 @@ export function SettingsClient({ settings }: Props) {
     e.preventDefault();
     const fd = new FormData();
     for (const [k, v] of Object.entries(form)) fd.append(k, v);
+    const sortedTiers = [...tiers].sort((a, b) => a.maxKm - b.maxKm);
+    fd.append("delivery_fee_tiers", JSON.stringify(sortedTiers));
     await saveSettings(fd);
     setSaved(true);
     setTimeout(() => setSaved(false), 2500);
@@ -96,6 +107,75 @@ export function SettingsClient({ settings }: Props) {
           <p className="text-xs mb-4" style={{ color: "#65676B" }}>Numéro sur lequel les commandes seront reçues (sans espaces ni +)</p>
           <div style={{ maxWidth: 280 }}>
             <Field label="Numéro WhatsApp" value={form.whatsapp_number} onChange={set("whatsapp_number")} placeholder="212600000000" />
+          </div>
+        </div>
+
+        {/* Frais de livraison */}
+        <div className="rounded-2xl bg-white p-6" style={{ border: "1px solid #E4E6EB" }}>
+          <h2 className="font-semibold mb-1" style={{ fontSize: 15, color: "#1C1E21" }}>Frais de livraison</h2>
+          <p className="text-xs mb-4" style={{ color: "#65676B" }}>Position GPS du restaurant et tranches tarifaires selon la distance</p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+            <Field label="Latitude du restaurant" value={form.restaurant_lat} onChange={set("restaurant_lat")} placeholder="34.0084" />
+            <Field label="Longitude du restaurant" value={form.restaurant_lng} onChange={set("restaurant_lng")} placeholder="-6.8539" />
+          </div>
+
+          <div className="flex flex-col gap-3">
+            {tiers.map((tier, i) => (
+              <div key={i} className="flex items-center gap-3">
+                <label className="flex flex-col gap-1 flex-1">
+                  <span className="text-xs font-semibold" style={{ color: "#65676B" }}>Jusqu&apos;à X km</span>
+                  <input
+                    type="number"
+                    min={0}
+                    value={tier.maxKm}
+                    onChange={e => {
+                      const next = [...tiers];
+                      next[i] = { ...next[i], maxKm: Number(e.target.value) };
+                      setTiers(next);
+                    }}
+                    className="rounded-xl px-3 py-2.5 text-sm outline-none transition-colors"
+                    style={{ border: "1.5px solid #E4E6EB", color: "#1C1E21", background: "#FAFBFC" }}
+                    onFocus={e => e.target.style.borderColor = "#1877F2"}
+                    onBlur={e => e.target.style.borderColor = "#E4E6EB"}
+                  />
+                </label>
+                <label className="flex flex-col gap-1 flex-1">
+                  <span className="text-xs font-semibold" style={{ color: "#65676B" }}>X MAD</span>
+                  <input
+                    type="number"
+                    min={0}
+                    value={tier.fee}
+                    onChange={e => {
+                      const next = [...tiers];
+                      next[i] = { ...next[i], fee: Number(e.target.value) };
+                      setTiers(next);
+                    }}
+                    className="rounded-xl px-3 py-2.5 text-sm outline-none transition-colors"
+                    style={{ border: "1.5px solid #E4E6EB", color: "#1C1E21", background: "#FAFBFC" }}
+                    onFocus={e => e.target.style.borderColor = "#1877F2"}
+                    onBlur={e => e.target.style.borderColor = "#E4E6EB"}
+                  />
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setTiers(tiers.filter((_, j) => j !== i))}
+                  className="mt-5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-sm font-bold transition-colors"
+                  style={{ background: "#FEE2E2", color: "#DC2626" }}
+                  aria-label="Supprimer"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+            <button
+              type="button"
+              onClick={() => setTiers(prev => [...prev, { maxKm: 0, fee: 0 }])}
+              className="mt-1 rounded-xl px-4 py-2 text-sm font-semibold transition-colors"
+              style={{ background: "#F0F2F5", color: "#1877F2", border: "1px solid #E4E6EB" }}
+            >
+              Ajouter une tranche
+            </button>
           </div>
         </div>
       </div>

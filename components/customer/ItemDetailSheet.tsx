@@ -73,13 +73,20 @@ export function ItemDetailSheet({ item, locale, onClose }: Props) {
     if (!item) return 0;
     return item.optionGroups.reduce((sum, g) => {
       const chosenIds = selected[g.id] ?? [];
-      return (
-        sum +
-        g.options
-          .filter((o) => chosenIds.includes(o.id))
-          .reduce((s, o) => s + o.extraPrice, 0)
-      );
+      const chosen = g.options.filter((o) => chosenIds.includes(o.id));
+      // Sort cheapest first — cheapest fill the free slots
+      const sorted = [...chosen].sort((a, b) => a.extraPrice - b.extraPrice);
+      const paid = sorted.slice(g.freeSelections);
+      return sum + paid.reduce((s, o) => s + o.extraPrice, 0);
     }, 0);
+  }
+
+  /** IDs of options that are currently "free" in a group (cheapest freeSelections selected) */
+  function getFreeOptionIds(g: import("@/types/menu").MenuOptionGroup): Set<number> {
+    const chosenIds = selected[g.id] ?? [];
+    const chosen = g.options.filter((o) => chosenIds.includes(o.id));
+    const sorted = [...chosen].sort((a, b) => a.extraPrice - b.extraPrice);
+    return new Set(sorted.slice(0, g.freeSelections).map((o) => o.id));
   }
 
   const unitPrice = item ? item.price + getOptionPrice() : 0;
@@ -100,27 +107,29 @@ export function ItemDetailSheet({ item, locale, onClose }: Props) {
         next = { ...prev, [group.id]: [...current, optionId] };
       }
 
-      // If Format group changed to Solo, clear Boisson selections
-      if (group.name.fr === "Format") {
-        const chosenOpt = group.options.find((o) => o.id === optionId);
-        if (chosenOpt?.name.fr === "Solo") {
-          item?.optionGroups.forEach((g) => {
-            if (g.name.fr.startsWith("Boisson")) next[g.id] = [];
-          });
-        }
-      }
+      // Clear selections for any groups that are now hidden
+      item?.optionGroups.forEach((g) => {
+        const cond = g.visibilityCondition;
+        if (!cond) return;
+        const depGroup = item.optionGroups.find((dg) => dg.name.fr === cond.groupFr);
+        if (!depGroup) return;
+        const chosenInDep = g.id === group.id ? (next[group.id] ?? []) : (next[depGroup.id] ?? []);
+        const visible = depGroup.options.some((o) => chosenInDep.includes(o.id) && o.name.fr.startsWith(cond.optionFr));
+        if (!visible) next[g.id] = [];
+      });
 
       return next;
     });
   }
 
-  // Derive whether Menu is selected in the Format group
-  const formatGroup = item?.optionGroups.find((g) => g.name.fr === "Format");
-  const selectedFormatOptId = formatGroup ? (selected[formatGroup.id]?.[0]) : undefined;
-  const selectedFormatOpt = formatGroup?.options.find((o) => o.id === selectedFormatOptId);
-  const menuSelected = formatGroup
-    ? selectedFormatOpt?.name.fr.startsWith("Menu") ?? false
-    : true; // no Format group → always show everything
+  function isGroupVisible(group: MenuOptionGroup): boolean {
+    const cond = group.visibilityCondition;
+    if (!cond || !item) return true;
+    const depGroup = item.optionGroups.find((g) => g.name.fr === cond.groupFr);
+    if (!depGroup) return false;
+    const chosenIds = selected[depGroup.id] ?? [];
+    return depGroup.options.some((o) => chosenIds.includes(o.id) && o.name.fr.startsWith(cond.optionFr));
+  }
 
   function handleAdd() {
     if (!item) return;
@@ -260,27 +269,40 @@ export function ItemDetailSheet({ item, locale, onClose }: Props) {
         </p>
 
         {item.optionGroups.map((group) => {
-          const isBoisson = group.name.fr.startsWith("Boisson");
-          if (isBoisson && !menuSelected) return null;
+          if (!isGroupVisible(group)) return null;
 
           const groupName = group.name[loc] ?? group.name.fr;
           const chosenIds = selected[group.id] ?? [];
           return (
             <div key={group.id} style={{ padding: "0 16px 16px" }}>
-              <p
-                className="mb-2 font-semibold uppercase"
-                style={{ fontSize: 12, color: "#65676B", letterSpacing: "0.05em" }}
-              >
-                {groupName}
-                {group.required && (
-                  <span className="ms-1" style={{ color: "#E53935" }}>*</span>
+              <div className="mb-2 flex items-center gap-2">
+                <p
+                  className="font-semibold uppercase"
+                  style={{ fontSize: 12, color: "#65676B", letterSpacing: "0.05em" }}
+                >
+                  {groupName}
+                  {group.required && (
+                    <span className="ms-1" style={{ color: "#E53935" }}>*</span>
+                  )}
+                </p>
+                {group.freeSelections > 0 && (
+                  <span
+                    className="rounded-md px-1.5 py-0.5 font-semibold"
+                    style={{ fontSize: 10, background: "#E6F4EA", color: "#2E7D32" }}
+                  >
+                    {group.freeSelections === 1
+                      ? "1 incluse"
+                      : `${group.freeSelections} incluses`}
+                  </span>
                 )}
-              </p>
+              </div>
               <div className="flex flex-col gap-2">
                 {group.options.map((opt) => {
                   const optName = opt.name[loc] ?? opt.name.fr;
                   const isChecked = chosenIds.includes(opt.id);
                   const isRadio = group.maxSelect === 1;
+                  const freeIds = group.freeSelections > 0 ? getFreeOptionIds(group) : null;
+                  const isFree = isChecked && freeIds?.has(opt.id);
                   return (
                     <label
                       key={opt.id}
@@ -299,14 +321,21 @@ export function ItemDetailSheet({ item, locale, onClose }: Props) {
                       <span style={{ fontSize: 14, color: "#1C1E21", flex: 1 }}>
                         {optName}
                       </span>
-                      {opt.extraPrice > 0 && (
+                      {isFree ? (
+                        <span
+                          className="font-semibold"
+                          style={{ fontSize: 12, color: "#2E7D32" }}
+                        >
+                          Incluse
+                        </span>
+                      ) : opt.extraPrice > 0 ? (
                         <span
                           className="font-semibold"
                           style={{ fontSize: 13, color: "#1877F2" }}
                         >
                           +{opt.extraPrice.toFixed(2)} MAD
                         </span>
-                      )}
+                      ) : null}
                     </label>
                   );
                 })}

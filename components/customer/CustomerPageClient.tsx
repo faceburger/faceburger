@@ -58,7 +58,7 @@ export function CustomerPageClient({ locale, menu, settings }: Props) {
     "w-full max-w-[480px] lg:max-w-[1200px] mx-auto";
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#121316]">
+    <div className="min-h-screen bg-white dark:bg-[#242526]">
 
       {/* ────────────────────────────────────────────────
           COVER — always full viewport width (exception to content column)
@@ -85,7 +85,7 @@ export function CustomerPageClient({ locale, menu, settings }: Props) {
         {/* Dark overlay — subtle, lets the photo breathe */}
         <div
           className="absolute inset-0"
-          style={{ background: "rgba(0, 0, 0, 0.42)" }}
+          style={{ background: "rgba(0, 0, 0, 0.22)" }}
         />
 
         {/* Centered logo — brand blue */}
@@ -248,10 +248,10 @@ export function CustomerPageClient({ locale, menu, settings }: Props) {
       {/* ────────────────────────────────────────────────
           MENU CONTENT — 480px mobile / 1200px desktop
       ──────────────────────────────────────────────── */}
-      <div className={contentMax}>
+      {/* Sticky category tabs — full viewport width */}
+      <CategoryTabs categories={menu} locale={locale} />
 
-        {/* Sticky category tabs with label */}
-        <CategoryTabs categories={menu} locale={locale} />
+      <div className={contentMax}>
 
         {/* Menu sections — categories preserved; items in 3 columns on lg+ */}
         {menu.map((category) => (
@@ -260,7 +260,7 @@ export function CustomerPageClient({ locale, menu, settings }: Props) {
             id={`category-${category.id}`}
             data-category-id={category.id}
           >
-            <div className="px-4 pt-6 pb-[18px] flex items-center gap-3">
+            <div className="px-4 pt-3 pb-[18px] flex items-center gap-3">
               <div className="w-1 rounded-full self-stretch" style={{ background: "#1877F2", minHeight: 28 }} />
               <h2 className="text-[22px] font-extrabold text-[#1C1E21] dark:text-[#e4e6eb]">
                 {getCategoryName(category)}

@@ -16,7 +16,7 @@ export default async function HomePage({
   const [cats, allItems, allGroups, allOptions, settings] = await Promise.all([
     db.select().from(categories).orderBy(asc(categories.sortOrder)),
     db.select().from(items).orderBy(asc(items.sortOrder)),
-    db.select().from(optionGroups),
+    db.select().from(optionGroups).orderBy(asc(optionGroups.sortOrder)),
     db.select().from(options),
     getSettings(),
   ]);
@@ -47,6 +47,8 @@ export default async function HomePage({
             required: g.required,
             minSelect: g.minSelect,
             maxSelect: g.maxSelect,
+            freeSelections: g.freeSelections ?? 0,
+            visibilityCondition: (g.visibilityCondition as { groupFr: string; optionFr: string } | null) ?? null,
             options: allOptions
               .filter((o) => o.groupId === g.id)
               .map((o) => ({

@@ -41,6 +41,9 @@ export const optionGroups = pgTable("option_groups", {
   required: boolean("required").notNull().default(false),
   minSelect: integer("min_select").notNull().default(0),
   maxSelect: integer("max_select").notNull().default(1),
+  freeSelections: integer("free_selections").notNull().default(0),
+  sortOrder: integer("sort_order").notNull().default(0),
+  visibilityCondition: jsonb("visibility_condition").$type<{ groupFr: string; optionFr: string } | null>().default(null),
 });
 
 export const options = pgTable("options", {
@@ -80,6 +83,9 @@ export const addonTemplates = pgTable("addon_templates", {
   required: boolean("required").notNull().default(false),
   minSelect: integer("min_select").notNull().default(0),
   maxSelect: integer("max_select").notNull().default(1),
+  freeSelections: integer("free_selections").notNull().default(0),
+  sortOrder: integer("sort_order").notNull().default(0),
+  visibilityCondition: jsonb("visibility_condition").$type<{ groupFr: string; optionFr: string } | null>().default(null),
 });
 
 /** Options belonging to an addon template */
@@ -92,4 +98,5 @@ export const addonTemplateOptions = pgTable("addon_template_options", {
   extraPrice: numeric("extra_price", { precision: 10, scale: 2 })
     .notNull()
     .default("0"),
+  sortOrder: integer("sort_order").notNull().default(0),
 });

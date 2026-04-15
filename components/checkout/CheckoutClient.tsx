@@ -5,13 +5,9 @@ import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { useCartStore, entryTotal } from "@/store/cart";
 import { createOrder } from "@/actions/orders";
-import { CheckoutMap } from "./CheckoutMap";
 import { CheckoutHero } from "./CheckoutHero";
 import { StepProgress } from "./StepProgress";
-import {
-  DEFAULT_DELIVERY_FEE_MAD,
-  MAP_DEFAULT_CENTER,
-} from "@/lib/checkout-constants";
+import { DEFAULT_DELIVERY_FEE_MAD } from "@/lib/checkout-constants";
 
 const COUNTRY_OPTIONS = [
   { code: "+212", flag: "🇲🇦", label: "MA" },
@@ -69,7 +65,15 @@ function ServiceRadio({ selected }: { selected: boolean }) {
   );
 }
 
-export function CheckoutClient({ locale, whatsappNumber }: { locale: string; whatsappNumber: string }) {
+function haversineKm(lat1: number, lng1: number, lat2: number, lng2: number): number {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLng = ((lng2 - lng1) * Math.PI) / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+export function CheckoutClient({ locale, whatsappNumber, settings }: { locale: string; whatsappNumber: string; settings: Record<string, string> }) {
   const t = useTranslations("checkoutFlow");
   const router = useRouter();
   const loc = locale as "fr" | "ar" | "en";
@@ -77,21 +81,43 @@ export function CheckoutClient({ locale, whatsappNumber }: { locale: string; wha
   const { entries, totalPrice, clearCart } = useCartStore();
 
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
-  const [fullName, setFullName] = useState("");
-  const [countryCode, setCountryCode] = useState("+212");
-  const [phone, setPhone] = useState("");
+
+  const saved = typeof window !== "undefined" ? JSON.parse(localStorage.getItem("fb_customer") || "{}") : {};
+  const [fullName, setFullName] = useState<string>(saved.fullName ?? "");
+  const [countryCode, setCountryCode] = useState<string>(saved.countryCode ?? "+212");
+  const [phone, setPhone] = useState<string>(saved.phone ?? "");
 
   const [serviceMode, setServiceMode] = useState<ServiceMode | null>(null);
   const [paymentMode, setPaymentMode] = useState<"cash">("cash");
-  const [markerLat, setMarkerLat] = useState(MAP_DEFAULT_CENTER.lat);
-  const [markerLng, setMarkerLng] = useState(MAP_DEFAULT_CENTER.lng);
   const [addressLine, setAddressLine] = useState("");
+  const [aptNumber, setAptNumber] = useState("");
+  const [addressNotes, setAddressNotes] = useState("");
+  const [gpsCoords, setGpsCoords] = useState<{ lat: number; lng: number } | null>(null);
+  const [locating, setLocating] = useState(false);
+  const [locateError, setLocateError] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
 
+  const deliveryTiers: { maxKm: number; fee: number }[] = (() => {
+    try {
+      return JSON.parse(settings.delivery_fee_tiers || "[]").sort(
+        (a: { maxKm: number }, b: { maxKm: number }) => a.maxKm - b.maxKm,
+      );
+    } catch {
+      return [];
+    }
+  })();
+  const restaurantLat = parseFloat(settings.restaurant_lat || "34.0084");
+  const restaurantLng = parseFloat(settings.restaurant_lng || "-6.8539");
+
   const subtotal = totalPrice();
-  const deliveryFee =
-    serviceMode === "delivery" ? DEFAULT_DELIVERY_FEE_MAD : 0;
+  const deliveryFee: number = (() => {
+    if (serviceMode !== "delivery") return 0;
+    if (!gpsCoords) return deliveryTiers[0]?.fee ?? DEFAULT_DELIVERY_FEE_MAD;
+    const distanceKm = haversineKm(restaurantLat, restaurantLng, gpsCoords.lat, gpsCoords.lng);
+    const matched = deliveryTiers.find(tier => distanceKm <= tier.maxKm);
+    return matched ? matched.fee : (deliveryTiers[deliveryTiers.length - 1]?.fee ?? DEFAULT_DELIVERY_FEE_MAD);
+  })();
   const grandTotal = subtotal + deliveryFee;
 
   useEffect(() => {
@@ -108,32 +134,29 @@ export function CheckoutClient({ locale, whatsappNumber }: { locale: string; wha
 
   const fullPhone = `${countryCode}${phone.replace(/\s/g, "")}`;
 
-  function geocodeLatLng(lat: number, lng: number) {
-    const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-    if (!key) return;
-    fetch(
-      `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=${key}`,
-    )
-      .then((r) => r.json())
-      .then((d) => {
-        if (d.results?.[0]?.formatted_address) {
-          setAddressLine(d.results[0].formatted_address);
-        }
-      })
-      .catch(() => {});
-  }
-
   function handleLocate() {
     if (!navigator.geolocation) return;
+    setLocating(true);
+    setLocateError(false);
     navigator.geolocation.getCurrentPosition(
       (pos) => {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
-        setMarkerLat(lat);
-        setMarkerLng(lng);
-        geocodeLatLng(lat, lng);
+        const { latitude: lat, longitude: lng } = pos.coords;
+        setGpsCoords({ lat, lng });
+        fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`,
+          { headers: { "Accept-Language": "fr" } },
+        )
+          .then((r) => r.json())
+          .then((d) => {
+            if (d.display_name) setAddressLine(d.display_name);
+          })
+          .catch(() => {})
+          .finally(() => setLocating(false));
       },
-      () => {},
+      () => {
+        setLocating(false);
+        setLocateError(true);
+      },
       { enableHighAccuracy: true, timeout: 10000 },
     );
   }
@@ -168,9 +191,13 @@ export function CheckoutClient({ locale, whatsappNumber }: { locale: string; wha
       lineTotal: entryTotal(e),
     }));
 
+    const fullAddress = [addressLine.trim(), aptNumber.trim(), addressNotes.trim()]
+      .filter(Boolean)
+      .join(" — ");
+
     const customerAddress =
       serviceMode === "delivery"
-        ? addressLine.trim()
+        ? fullAddress
         : serviceMode === "pickup"
           ? t("pickupAddress")
           : serviceMode === "dine_in"
@@ -181,15 +208,13 @@ export function CheckoutClient({ locale, whatsappNumber }: { locale: string; wha
       fullName,
       serviceMode,
       paymentMode,
-      mapLat: serviceMode === "delivery" ? markerLat : null,
-      mapLng: serviceMode === "delivery" ? markerLng : null,
       subtotal,
       deliveryFee,
-      addressLine: serviceMode === "delivery" ? addressLine : null,
+      addressLine: serviceMode === "delivery" ? fullAddress : null,
     };
 
     try {
-      await createOrder({
+      const orderId = await createOrder({
         customerName: fullName,
         customerPhone: fullPhone,
         customerAddress,
@@ -198,61 +223,62 @@ export function CheckoutClient({ locale, whatsappNumber }: { locale: string; wha
         orderMeta,
       });
 
-      const sep = "──────────────";
+      const now = new Date();
+      const pad2 = (n: number) => String(n).padStart(2, "0");
+      const dateStr = `${pad2(now.getDate())}/${pad2(now.getMonth() + 1)}/${now.getFullYear()} - ${pad2(now.getHours())}:${pad2(now.getMinutes())}`;
+
+      const sep = "────────────────────";
       const serviceLineFr =
-        serviceMode === "delivery"
-          ? "Livraison"
-          : serviceMode === "pickup"
-            ? "A emporter"
-            : "Sur place";
-      const addressForWhatsapp =
-        serviceMode === "delivery"
-          ? addressLine.trim()
-          : serviceMode === "pickup"
-            ? "A emporter (sans adresse)"
-            : "Sur place";
+        serviceMode === "delivery" ? "Livraison"
+        : serviceMode === "pickup" ? "A emporter"
+        : "Sur place";
 
       const lines: string[] = [
-        "NOUVELLE COMMANDE",
+        "FACEBURGER",
+        `Commande #${orderId}`,
+        `Date : ${dateStr}`,
         sep,
-        "",
-        `Nom          : ${fullName}`,
-        `Tel          : ${fullPhone}`,
-        `Service      : ${serviceLineFr}`,
-        `Paiement     : En espèces`,
-        `Adresse      : ${addressForWhatsapp}`,
-        "",
+        `Client : ${fullName}`,
+        `Tel    : ${fullPhone}`,
         sep,
-        "DÉTAIL COMMANDE",
-        sep,
-        "",
+        `Service  : ${serviceLineFr}`,
+        `Paiement : En espèces`,
       ];
+
+      if (serviceMode === "delivery") {
+        lines.push(`Adresse  : ${fullAddress}`);
+      }
+
+      lines.push(sep);
 
       for (const entry of entries) {
         const name = entry.itemName.fr;
         const lineTotal = entryTotal(entry).toFixed(2);
         lines.push(`${entry.quantity}x  ${name}`);
-        if (entry.chosenOptions.length > 0) {
-          for (const opt of entry.chosenOptions) {
-            const optName = opt.optionName.fr;
-            lines.push(`     + ${optName}${opt.extraPrice > 0 ? ` (${opt.extraPrice.toFixed(2)} MAD)` : ""}`);
-          }
+        for (const opt of entry.chosenOptions) {
+          const optName = opt.optionName.fr;
+          lines.push(`   + ${optName}${opt.extraPrice > 0 ? ` (+${opt.extraPrice.toFixed(2)} MAD)` : ""}`);
         }
-        lines.push(`     ${lineTotal} MAD`);
+        lines.push(`   ${lineTotal} MAD`);
         lines.push("");
       }
 
       lines.push(sep);
-      lines.push(`Sous-total   : ${subtotal.toFixed(2)} MAD`);
+      lines.push(`Sous-total : ${subtotal.toFixed(2)} MAD`);
       if (deliveryFee > 0) {
-        lines.push(`Livraison    : ${deliveryFee.toFixed(2)} MAD`);
+        lines.push(`Livraison  : ${deliveryFee.toFixed(2)} MAD`);
       }
-      lines.push(`TOTAL        : ${grandTotal.toFixed(2)} MAD`);
+      lines.push(`TOTAL      : ${grandTotal.toFixed(2)} MAD`);
       lines.push(sep);
+
+      if (gpsCoords && serviceMode === "delivery") {
+        lines.push(`GPS      : https://www.google.com/maps?q=${gpsCoords.lat},${gpsCoords.lng}`);
+      }
 
       const message = lines.join("\n");
       const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
 
+      localStorage.setItem("fb_customer", JSON.stringify({ fullName, countryCode, phone }));
       const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
       clearCart();
       if (isMobile) window.location.href = url;
@@ -302,7 +328,7 @@ export function CheckoutClient({ locale, whatsappNumber }: { locale: string; wha
           : "—";
 
   return (
-    <div className="min-h-screen bg-white pb-8 pt-[env(safe-area-inset-top)] dark:bg-[#121316]">
+    <div className="min-h-screen bg-white pb-8 pt-[env(safe-area-inset-top)] dark:bg-[#242526]">
       <CheckoutHero />
       <StepProgress activeStep={activeStep} totalSteps={totalSteps} />
 
@@ -329,7 +355,7 @@ export function CheckoutClient({ locale, whatsappNumber }: { locale: string; wha
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder={t("placeholders.name")}
                 autoComplete="name"
-                className="min-h-[48px] w-full rounded-xl border border-[#E4E6EB] px-3 text-[15px] outline-none focus:border-[#1877F2]"
+                className="min-h-[48px] w-full rounded-xl border border-[#E4E6EB] px-3 text-[16px] outline-none focus:border-[#1877F2]"
               />
             </label>
             <div>
@@ -340,7 +366,7 @@ export function CheckoutClient({ locale, whatsappNumber }: { locale: string; wha
                 <select
                   value={countryCode}
                   onChange={(e) => setCountryCode(e.target.value)}
-                  className="min-h-[48px] shrink-0 rounded-xl border border-[#E4E6EB] bg-white px-2 text-[14px] font-medium"
+                  className="min-h-[48px] shrink-0 rounded-xl border border-[#E4E6EB] bg-white px-2 text-[16px] font-medium"
                 >
                   {COUNTRY_OPTIONS.map((c) => (
                     <option key={c.code} value={c.code}>
@@ -354,7 +380,7 @@ export function CheckoutClient({ locale, whatsappNumber }: { locale: string; wha
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder={t("placeholders.phone")}
-                  className="min-h-[48px] min-w-0 flex-1 rounded-xl border border-[#E4E6EB] px-3 text-[15px] outline-none focus:border-[#1877F2]"
+                  className="min-h-[48px] min-w-0 flex-1 rounded-xl border border-[#E4E6EB] px-3 text-[16px] outline-none focus:border-[#1877F2]"
                 />
               </div>
             </div>
@@ -382,7 +408,7 @@ export function CheckoutClient({ locale, whatsappNumber }: { locale: string; wha
                   <p className="font-bold text-[#1C1E21] dark:text-[#E4E6EB]">
                     {t("service.delivery")}{" "}
                     <span className="text-[#1877F2]">
-                      (+{DEFAULT_DELIVERY_FEE_MAD} {t("currency")})
+                      ({!gpsCoords ? "dès " : "+"}{deliveryFee} {t("currency")})
                     </span>
                   </p>
                   <p className="mt-1 text-[13px] leading-snug text-[#65676B] dark:text-[#B0B3B8]">
@@ -457,31 +483,94 @@ export function CheckoutClient({ locale, whatsappNumber }: { locale: string; wha
         {/* Step 3 — delivery only (pickup / dine-in skip this step) */}
         {step === 3 && serviceMode === "delivery" && (
           <div className="mt-5 flex flex-col gap-5">
-            <div className="-mx-4 w-[calc(100%+2rem)] sm:mx-0 sm:w-full">
-              <CheckoutMap
-                markerLat={markerLat}
-                markerLng={markerLng}
-                onLocate={handleLocate}
-                locateLabel={t("map.locateMe")}
-                onMarkerDragEnd={(lat, lng) => {
-                  setMarkerLat(lat);
-                  setMarkerLng(lng);
-                }}
-                onGeocode={setAddressLine}
-              />
+
+            {/* GPS pin block */}
+            <div className="flex flex-col gap-3 rounded-2xl border border-[#E4E6EB] bg-[#FAFBFC] p-4 dark:border-[#3a3b3d] dark:bg-[#1c1e21]">
+              <p className="text-[13px] text-[#65676B] dark:text-[#B0B3B8]">
+                Un lien Maps sera joint à votre commande.
+              </p>
+              <button
+                type="button"
+                onClick={handleLocate}
+                disabled={locating}
+                className={`flex min-h-[50px] w-full items-center justify-center gap-2.5 rounded-xl text-[14px] font-semibold transition-all active:scale-[0.98] disabled:opacity-60 ${
+                  gpsCoords
+                    ? "bg-emerald-500 text-white shadow-sm"
+                    : "bg-[#1877F2] text-white shadow-sm"
+                }`}
+              >
+                {locating ? (
+                  <>
+                    <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+                      <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+                    </svg>
+                    Localisation en cours…
+                  </>
+                ) : gpsCoords ? (
+                  <>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    Position épinglée — ré-épingler
+                  </>
+                ) : (
+                  <>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <line x1="12" y1="2" x2="12" y2="6" /><line x1="12" y1="18" x2="12" y2="22" />
+                      <line x1="2" y1="12" x2="6" y2="12" /><line x1="18" y1="12" x2="22" y2="12" />
+                      <circle cx="12" cy="12" r="4" />
+                    </svg>
+                    Épingler ma localisation
+                  </>
+                )}
+              </button>
+
+              {locateError && (
+                <p className="text-center text-[12px] text-red-500">
+                  Accès refusé. Autorisez la localisation dans les paramètres de votre navigateur.
+                </p>
+              )}
             </div>
-            <label className="flex flex-col gap-1.5">
-              <span className="text-[13px] font-semibold text-[#65676B] dark:text-[#B0B3B8]">
-                {t("labels.address")}
-              </span>
-              <textarea
-                value={addressLine}
-                onChange={(e) => setAddressLine(e.target.value)}
-                rows={3}
-                placeholder={t("placeholders.address")}
-                className="w-full rounded-xl border border-[#E4E6EB] bg-white px-3 py-3 text-[14px] outline-none focus:border-[#1877F2] dark:border-[#3a3b3d] dark:bg-[#1c1e21]"
-              />
-            </label>
+
+            {/* Address fields */}
+            <div className="flex flex-col gap-3">
+              <label className="flex flex-col gap-1.5">
+                <span className="text-[13px] font-semibold text-[#65676B] dark:text-[#B0B3B8]">
+                  Adresse <span className="text-red-400">*</span>
+                </span>
+                <input
+                  value={addressLine}
+                  onChange={(e) => setAddressLine(e.target.value)}
+                  placeholder="Rue, quartier, ville…"
+                  className="min-h-[48px] w-full rounded-xl border border-[#E4E6EB] bg-white px-3 text-[14px] outline-none focus:border-[#1877F2] dark:border-[#3a3b3d] dark:bg-[#1c1e21] dark:text-[#E4E6EB]"
+                />
+              </label>
+
+              <label className="flex flex-col gap-1.5">
+                <span className="text-[13px] font-semibold text-[#65676B] dark:text-[#B0B3B8]">
+                  Appartement / Étage
+                </span>
+                <input
+                  value={aptNumber}
+                  onChange={(e) => setAptNumber(e.target.value)}
+                  placeholder="Ex : Appt 3, 2ème étage…"
+                  className="min-h-[48px] w-full rounded-xl border border-[#E4E6EB] bg-white px-3 text-[14px] outline-none focus:border-[#1877F2] dark:border-[#3a3b3d] dark:bg-[#1c1e21] dark:text-[#E4E6EB]"
+                />
+              </label>
+
+              <label className="flex flex-col gap-1.5">
+                <span className="text-[13px] font-semibold text-[#65676B] dark:text-[#B0B3B8]">
+                  Instructions supplémentaires
+                </span>
+                <textarea
+                  value={addressNotes}
+                  onChange={(e) => setAddressNotes(e.target.value)}
+                  rows={2}
+                  placeholder="Code de porte, point de repère…"
+                  className="w-full rounded-xl border border-[#E4E6EB] bg-white px-3 py-3 text-[16px] outline-none focus:border-[#1877F2] dark:border-[#3a3b3d] dark:bg-[#1c1e21] dark:text-[#E4E6EB]"
+                />
+              </label>
+            </div>
           </div>
         )}
 
@@ -500,7 +589,7 @@ export function CheckoutClient({ locale, whatsappNumber }: { locale: string; wha
                 label={t("labels.address")}
                 value={
                   serviceMode === "delivery"
-                    ? addressLine || "—"
+                    ? [addressLine, aptNumber, addressNotes].filter(Boolean).join(" — ") || "—"
                     : serviceMode === "pickup"
                       ? t("pickupAddress")
                       : serviceMode === "dine_in"

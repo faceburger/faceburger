@@ -11,6 +11,7 @@ var DATABASE_URL = process.env.DATABASE_URL;
 var PRINTER_NAME = process.env.PRINTER_NAME;
 var POLL_MS = parseInt(process.env.POLL_MS || "3000", 10);
 var TIMEZONE = process.env.TIMEZONE || "Africa/Casablanca";
+var LINE_WIDTH = parseInt(process.env.LINE_WIDTH || "40", 10);
 
 if (!DATABASE_URL) {
   console.error("[printer-listener] Missing DATABASE_URL in .env");
@@ -50,36 +51,81 @@ function money(value) {
 }
 
 function normalizeServiceMode(serviceMode) {
-  if (serviceMode === "delivery") return "Livraison";
-  if (serviceMode === "pickup") return "A emporter";
-  if (serviceMode === "dine_in") return "Sur place";
-  return "Non defini";
+  if (serviceMode === "delivery") return "LIVRAISON";
+  if (serviceMode === "pickup") return "A EMPORTER";
+  if (serviceMode === "dine_in") return "SUR PLACE";
+  return "NON DEFINI";
 }
 
 function formatDate(dateValue) {
   var date = new Date(dateValue);
   try {
-    return new Intl.DateTimeFormat("fr-FR", {
+    var fmt = new Intl.DateTimeFormat("fr-FR", {
       timeZone: TIMEZONE,
       year: "numeric",
       month: "2-digit",
       day: "2-digit",
       hour: "2-digit",
       minute: "2-digit",
-    }).format(date);
+      hour12: false,
+    });
+    if (fmt.formatToParts) {
+      var p = {};
+      fmt.formatToParts(date).forEach(function (part) { p[part.type] = part.value; });
+      return p.day + "/" + p.month + "/" + p.year + " - " + p.hour + ":" + p.minute;
+    }
+    return fmt.format(date);
   } catch (_err) {
-    return new Intl.DateTimeFormat("fr-FR", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    }).format(date);
+    try {
+      var fmt2 = new Intl.DateTimeFormat("fr-FR", {
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+        hour12: false,
+      });
+      if (fmt2.formatToParts) {
+        var p2 = {};
+        fmt2.formatToParts(date).forEach(function (part) { p2[part.type] = part.value; });
+        return p2.day + "/" + p2.month + "/" + p2.year + " - " + p2.hour + ":" + p2.minute;
+      }
+      return fmt2.format(date);
+    } catch (_err2) {
+      return date.toLocaleString();
+    }
   }
 }
 
+function repeat(char, n) {
+  var s = "";
+  for (var i = 0; i < n; i++) s += char;
+  return s;
+}
+
 function divider() {
-  return "----------------------------------------";
+  return repeat("-", LINE_WIDTH);
+}
+
+function dashedDivider() {
+  var s = "";
+  for (var i = 0; i < LINE_WIDTH; i++) s += (i % 2 === 0 ? "-" : " ");
+  return s;
+}
+
+function center(text) {
+  var t = String(text || "");
+  if (t.length >= LINE_WIDTH) return t;
+  var left = Math.floor((LINE_WIDTH - t.length) / 2);
+  return repeat(" ", left) + t;
+}
+
+function rightAlign(label, value) {
+  var l = String(label || "");
+  var v = String(value || "");
+  var spaces = LINE_WIDTH - l.length - v.length;
+  if (spaces < 1) spaces = 1;
+  return l + repeat(" ", spaces) + v;
 }
 
 function parseItems(itemsRaw) {
@@ -99,21 +145,15 @@ function buildKitchenTicket(order) {
   var orderMeta = order.order_meta || {};
   var mode = normalizeServiceMode(orderMeta.serviceMode);
   var items = parseItems(order.items);
+
   var lines = [
-    "KITCHEN TICKET",
-    divider(),
-    "Commande : #" + order.id,
-    "Heure    : " + formatDate(order.created_at),
-    "Service  : " + mode,
-    "Client   : " + order.customer_name,
-    "Tel      : " + order.customer_phone,
+    dashedDivider(),
+    center("KITCHEN TICKET"),
+    center("Commande #" + order.id),
+    dashedDivider(),
+    center(mode),
+    dashedDivider(),
   ];
-
-  if (orderMeta.serviceMode === "delivery") {
-    lines.push("Adresse  : " + order.customer_address);
-  }
-
-  lines.push(divider(), "ARTICLES", divider());
 
   items.forEach(function (item) {
     lines.push(item.quantity + " x " + item.name);
@@ -123,11 +163,16 @@ function buildKitchenTicket(order) {
       var extraText = extra > 0 ? " (+" + money(extra) + " MAD)" : "";
       lines.push("  + " + String(safeGet(opt, "name", "")) + extraText);
     });
-    lines.push("");
   });
 
-  lines.push(divider(), "", "", "\f");
-  return lines.join("\n");
+  lines.push(
+    dashedDivider(),
+    "Client : " + order.customer_name,
+    "Tel    : " + order.customer_phone,
+    formatDate(order.created_at),
+    "", "", "", ""
+  );
+  return lines.join("\r\n");
 }
 
 function buildReceiptTicket(order) {
@@ -139,8 +184,8 @@ function buildReceiptTicket(order) {
   var total = Number(order.total || 0);
 
   var lines = [
-    "FACEBURGER",
-    "RECU CLIENT",
+    center("FACEBURGER"),
+    center("RECU CLIENT"),
     divider(),
     "Commande : #" + order.id,
     "Date     : " + formatDate(order.created_at),
@@ -153,7 +198,7 @@ function buildReceiptTicket(order) {
     lines.push("Adresse  : " + order.customer_address);
   }
 
-  lines.push(divider(), "DETAIL", divider());
+  lines.push(divider());
 
   items.forEach(function (item) {
     lines.push(item.quantity + " x " + item.name);
@@ -163,16 +208,20 @@ function buildReceiptTicket(order) {
       var extraText = extra > 0 ? " (+" + money(extra) + " MAD)" : "";
       lines.push("  + " + String(safeGet(opt, "name", "")) + extraText);
     });
-    lines.push("  = " + money(item.lineTotal) + " MAD");
+    lines.push(rightAlign("", money(item.lineTotal) + " MAD"));
     lines.push("");
   });
 
   lines.push(divider());
-  lines.push("Sous-total : " + money(subtotal) + " MAD");
-  if (deliveryFee > 0) lines.push("Livraison  : " + money(deliveryFee) + " MAD");
-  lines.push("TOTAL      : " + money(total) + " MAD");
-  lines.push(divider(), "Merci et a bientot !", "", "", "\f");
-  return lines.join("\n");
+  lines.push(rightAlign("Sous-total :", money(subtotal) + " MAD"));
+  if (deliveryFee > 0) {
+    lines.push(rightAlign("Livraison  :", money(deliveryFee) + " MAD"));
+  }
+  lines.push(rightAlign("TOTAL TTC  :", money(total) + " MAD"));
+  lines.push(divider());
+  lines.push(center("Merci de votre visite !"));
+  lines.push("", "", "", "");
+  return lines.join("\r\n");
 }
 
 function runPowerShell(command) {
@@ -185,12 +234,8 @@ function runPowerShell(command) {
 
     var stderr = "";
     var stdout = "";
-    child.stderr.on("data", function (chunk) {
-      stderr += chunk.toString();
-    });
-    child.stdout.on("data", function (chunk) {
-      stdout += chunk.toString();
-    });
+    child.stderr.on("data", function (chunk) { stderr += chunk.toString(); });
+    child.stdout.on("data", function (chunk) { stdout += chunk.toString(); });
 
     child.on("close", function (code) {
       if (code === 0) resolve();
@@ -201,13 +246,11 @@ function runPowerShell(command) {
   });
 }
 
-/** Fallback when Out-Printer is missing (PS3+) or fails — uses Windows PRINT.EXE */
 function runCmdPrint(filePath) {
   return new Promise(function (resolve, reject) {
     var safePrinter = PRINTER_NAME.replace(/"/g, "");
     var safePath = filePath.replace(/"/g, "");
-    var cmdline =
-      'cmd /c print /D:"' + safePrinter + '" "' + safePath + '"';
+    var cmdline = 'cmd /c print /D:"' + safePrinter + '" "' + safePath + '"';
     exec(cmdline, { windowsHide: true, timeout: 60000 }, function (err, stdout, stderr) {
       var out = ((stderr || "") + (stdout || "")).trim();
       if (err) {
@@ -225,30 +268,21 @@ async function sendToPrinter(content, label) {
   var filePath = path.join(os.tmpdir(), filename);
   await fs.writeFile(filePath, content, "utf8");
 
-  // PS 2.0: no Get-Content -Raw. Out-Printer exists in PS 3+; on Win7 PS2 it may be missing — we fallback to PRINT.EXE.
   var escapedPath = filePath.replace(/'/g, "''");
   var escapedPrinter = PRINTER_NAME.replace(/'/g, "''");
   var psCommand =
-    "[System.IO.File]::ReadAllText('" +
-    escapedPath +
-    "') | Out-Printer -Name '" +
-    escapedPrinter +
-    "'";
+    "[System.IO.File]::ReadAllText('" + escapedPath + "') | Out-Printer -Name '" + escapedPrinter + "'";
 
   try {
     try {
       await runPowerShell(psCommand);
     } catch (psErr) {
       var msg = psErr && psErr.message ? psErr.message : String(psErr);
-      console.error("[printer-listener] Out-Printer path failed, trying PRINT.EXE:", msg);
+      console.error("[printer-listener] Out-Printer failed, trying PRINT.EXE:", msg);
       await runCmdPrint(filePath);
     }
   } finally {
-    try {
-      await fs.unlink(filePath);
-    } catch (_err) {
-      // ignore temp cleanup errors
-    }
+    try { await fs.unlink(filePath); } catch (_err) {}
   }
 }
 
@@ -269,18 +303,10 @@ async function markPrinted(orderId) {
 
 function normalizeOrderRow(order) {
   if (order && typeof order.items === "string") {
-    try {
-      order.items = JSON.parse(order.items);
-    } catch (_e) {
-      order.items = [];
-    }
+    try { order.items = JSON.parse(order.items); } catch (_e) { order.items = []; }
   }
   if (order && typeof order.order_meta === "string") {
-    try {
-      order.order_meta = JSON.parse(order.order_meta);
-    } catch (_e) {
-      order.order_meta = {};
-    }
+    try { order.order_meta = JSON.parse(order.order_meta); } catch (_e) { order.order_meta = {}; }
   }
   return order;
 }
@@ -302,7 +328,6 @@ var busy = false;
 async function tick() {
   if (busy) return;
   busy = true;
-
   try {
     var orders = await fetchPendingOrders();
     if (orders.length > 0) {
@@ -328,6 +353,7 @@ async function main() {
   console.log("[printer-listener] Started.");
   console.log("[printer-listener] Printer: " + PRINTER_NAME);
   console.log("[printer-listener] Poll interval: " + POLL_MS + "ms");
+  console.log("[printer-listener] Line width: " + LINE_WIDTH + " chars");
 
   await tick();
   setInterval(tick, POLL_MS);

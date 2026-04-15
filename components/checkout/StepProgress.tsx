@@ -53,7 +53,7 @@ export function StepProgress({
   const steps = Array.from({ length: totalSteps }, (_, i) => i + 1);
 
   return (
-    <div className="bg-white px-4 pb-5 pt-4 dark:bg-[#121316]">
+    <div className="bg-white px-4 pb-5 pt-4 dark:bg-[#242526]">
       <div className="mx-auto flex max-w-lg items-center">
         {steps.map((n, i) => (
           <Fragment key={n}>

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { Trash2 } from "lucide-react";
+import { useRef, useState } from "react";
+import { Trash2, Download, FileText, TableProperties } from "lucide-react";
 import { deleteOrder } from "@/actions/orders";
 
 type Order = {
@@ -53,13 +53,99 @@ function serviceBadgeStyle(mode: unknown): React.CSSProperties {
   return { background: "#F0F2F5", color: "#65676B" };
 }
 
+type ExportPeriod = "today" | "week" | "all" | "custom";
+type ExportFormat = "csv" | "pdf";
+
+async function exportToPDF(orders: Order[]) {
+  const { default: jsPDF } = await import("jspdf");
+  const { default: autoTable } = await import("jspdf-autotable");
+
+  const doc = new jsPDF({ orientation: "landscape" });
+
+  const dateStr = new Date().toLocaleDateString("fr-FR");
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "bold");
+  doc.text("FACEBURGER — Rapport des commandes", 14, 18);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(100);
+  doc.text(`Généré le ${dateStr} — ${orders.length} commande${orders.length !== 1 ? "s" : ""}`, 14, 26);
+
+  const rows = orders.map(o => {
+    const items = (o.items as OrderItem[]).map(it => {
+      const opts = it.options?.length ? ` (${it.options.map(op => op.name).join(", ")})` : "";
+      return `${it.quantity}x ${it.name}${opts}`;
+    }).join("\n");
+    const date = new Date(o.createdAt).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+    return [`#${o.id}`, date, o.customerName, o.customerPhone, serviceLabel(o.orderMeta?.serviceMode), items, o.customerAddress || "—", `${parseFloat(String(o.total)).toFixed(2)} MAD`];
+  });
+
+  autoTable(doc, {
+    startY: 32,
+    head: [["#", "Date", "Client", "Téléphone", "Mode", "Articles", "Adresse", "Total"]],
+    body: rows,
+    styles: { fontSize: 8, cellPadding: 3 },
+    headStyles: { fillColor: [24, 119, 242], textColor: 255, fontStyle: "bold" },
+    alternateRowStyles: { fillColor: [245, 247, 250] },
+    columnStyles: { 5: { cellWidth: 60 }, 6: { cellWidth: 50 } },
+  });
+
+  doc.save(`commandes-${new Date().toISOString().slice(0, 10)}.pdf`);
+}
+
+function exportToCSV(orders: Order[]) {
+  const headers = ["#", "Date", "Client", "Téléphone", "Mode", "Articles", "Adresse", "Total (MAD)"];
+  const rows = orders.map(o => {
+    const items = (o.items as OrderItem[]).map(it => {
+      const opts = it.options?.length ? ` (${it.options.map(op => op.name).join(", ")})` : "";
+      return `${it.quantity}x ${it.name}${opts}`;
+    }).join(" | ");
+    const mode = serviceLabel(o.orderMeta?.serviceMode);
+    const date = new Date(o.createdAt).toLocaleString("fr-FR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+    return [o.id, date, o.customerName, o.customerPhone, mode, items, o.customerAddress || "—", parseFloat(String(o.total)).toFixed(2)];
+  });
+  const csv = [headers, ...rows].map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
+  const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `commandes-${new Date().toISOString().slice(0, 10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
 export function OrdersClient({ orders: initialOrders }: Props) {
   const [filter, setFilter] = useState<"today" | "week" | "all">("all");
   const [search, setSearch] = useState("");
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [deletedIds, setDeletedIds] = useState<Set<number>>(new Set());
+  const [exportOpen, setExportOpen] = useState(false);
+  const [exportPeriod, setExportPeriod] = useState<ExportPeriod>("all");
+  const [exportFormat, setExportFormat] = useState<ExportFormat>("pdf");
+  const [exportFrom, setExportFrom] = useState("");
+  const [exportTo, setExportTo] = useState("");
+  const exportRef = useRef<HTMLDivElement>(null);
 
   const orders = initialOrders.filter(o => !deletedIds.has(o.id));
+
+  async function handleExport() {
+    const from = exportFrom ? new Date(exportFrom) : null;
+    const to = exportTo ? new Date(exportTo + "T23:59:59") : null;
+    const filtered = orders.filter(o => {
+      const date = new Date(o.createdAt);
+      if (exportPeriod === "today") return isToday(date);
+      if (exportPeriod === "week") return isThisWeek(date);
+      if (exportPeriod === "custom") {
+        if (from && date < from) return false;
+        if (to && date > to) return false;
+        return true;
+      }
+      return true;
+    });
+    if (exportFormat === "pdf") await exportToPDF(filtered);
+    else exportToCSV(filtered);
+    setExportOpen(false);
+  }
 
   async function handleDelete(id: number) {
     setDeletingId(null);
@@ -104,6 +190,94 @@ export function OrdersClient({ orders: initialOrders }: Props) {
         <div>
           <h1 className="font-bold text-xl" style={{ color: "#1C1E21" }}>Commandes</h1>
           <p className="text-sm mt-0.5" style={{ color: "#65676B" }}>{orders.length} commande{orders.length !== 1 ? "s" : ""} au total</p>
+        </div>
+        <div className="relative" ref={exportRef}>
+          <button
+            onClick={() => setExportOpen(v => !v)}
+            className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition-colors"
+            style={{ background: "#1877F2", color: "#ffffff" }}
+          >
+            <Download size={15} />
+            Exporter
+          </button>
+
+          {exportOpen && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => setExportOpen(false)} />
+              <div className="absolute end-0 top-[calc(100%+8px)] z-20 w-72 rounded-2xl bg-white p-4 shadow-xl" style={{ border: "1px solid #E4E6EB" }}>
+                <p className="text-sm font-bold mb-3" style={{ color: "#1C1E21" }}>Exporter les commandes</p>
+
+                <p className="text-xs font-semibold mb-2" style={{ color: "#65676B" }}>Période</p>
+                <div className="flex flex-col gap-1.5 mb-4">
+                  {([
+                    { key: "all", label: "Toutes les commandes" },
+                    { key: "today", label: "Aujourd'hui" },
+                    { key: "week", label: "Cette semaine" },
+                    { key: "custom", label: "Période personnalisée" },
+                  ] as { key: ExportPeriod; label: string }[]).map(opt => (
+                    <button
+                      key={opt.key}
+                      onClick={() => setExportPeriod(opt.key)}
+                      className="flex items-center gap-2.5 rounded-xl px-3 py-2 text-sm text-left transition-colors"
+                      style={{
+                        background: exportPeriod === opt.key ? "#EBF3FF" : "#F0F2F5",
+                        color: exportPeriod === opt.key ? "#1877F2" : "#1C1E21",
+                        fontWeight: exportPeriod === opt.key ? 600 : 400,
+                      }}
+                    >
+                      <span className="flex h-4 w-4 shrink-0 items-center justify-center rounded-full border-2" style={{ borderColor: exportPeriod === opt.key ? "#1877F2" : "#BCC0C4" }}>
+                        {exportPeriod === opt.key && <span className="h-2 w-2 rounded-full bg-[#1877F2]" />}
+                      </span>
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+
+                {exportPeriod === "custom" && (
+                  <div className="grid grid-cols-2 gap-2 mb-4">
+                    <label className="flex flex-col gap-1">
+                      <span className="text-xs font-semibold" style={{ color: "#65676B" }}>Du</span>
+                      <input type="date" value={exportFrom} onChange={e => setExportFrom(e.target.value)} className="w-full rounded-lg px-2.5 py-1.5 text-xs outline-none" style={{ border: "1.5px solid #E4E6EB", color: "#1C1E21", background: "#FAFBFC" }} />
+                    </label>
+                    <label className="flex flex-col gap-1">
+                      <span className="text-xs font-semibold" style={{ color: "#65676B" }}>Au</span>
+                      <input type="date" value={exportTo} onChange={e => setExportTo(e.target.value)} className="w-full rounded-lg px-2.5 py-1.5 text-xs outline-none" style={{ border: "1.5px solid #E4E6EB", color: "#1C1E21", background: "#FAFBFC" }} />
+                    </label>
+                  </div>
+                )}
+
+                <p className="text-xs font-semibold mb-2" style={{ color: "#65676B" }}>Format</p>
+                <div className="grid grid-cols-2 gap-2 mb-4">
+                  {([
+                    { key: "pdf", label: "PDF", icon: <FileText size={14} /> },
+                    { key: "csv", label: "CSV", icon: <TableProperties size={14} /> },
+                  ] as { key: ExportFormat; label: string; icon: React.ReactNode }[]).map(f => (
+                    <button
+                      key={f.key}
+                      onClick={() => setExportFormat(f.key)}
+                      className="flex items-center justify-center gap-2 rounded-xl py-2 text-sm font-semibold transition-colors"
+                      style={{
+                        background: exportFormat === f.key ? "#EBF3FF" : "#F0F2F5",
+                        color: exportFormat === f.key ? "#1877F2" : "#65676B",
+                        border: exportFormat === f.key ? "1.5px solid #1877F2" : "1.5px solid transparent",
+                      }}
+                    >
+                      {f.icon}{f.label}
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={handleExport}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl py-2.5 text-sm font-semibold text-white"
+                  style={{ background: "#1877F2" }}
+                >
+                  <Download size={14} />
+                  Télécharger {exportFormat.toUpperCase()}
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
 
@@ -176,7 +350,7 @@ export function OrdersClient({ orders: initialOrders }: Props) {
                     <td style={{ padding: "12px 16px", fontSize: 13, fontWeight: 600, color: "#1C1E21" }}>{order.customerName}</td>
                     <td style={{ padding: "12px 16px", fontSize: 13, color: "#1C1E21" }}>{order.customerPhone}</td>
                     <td style={{ padding: "12px 16px" }}>
-                      <span className="text-xs font-semibold rounded-lg px-2.5 py-1" style={serviceBadgeStyle(mode)}>
+                      <span className="text-xs font-semibold rounded-lg px-2.5 py-1 whitespace-nowrap" style={serviceBadgeStyle(mode)}>
                         {serviceLabel(mode)}
                       </span>
                     </td>

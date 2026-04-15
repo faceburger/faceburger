@@ -2,7 +2,7 @@
 
 import { db } from "@/db";
 import { addonTemplates, addonTemplateOptions, optionGroups, options } from "@/db/schema";
-import { sql, eq, and, inArray } from "drizzle-orm";
+import { sql, eq, and, inArray, asc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 async function ensureTables() {
@@ -23,20 +23,58 @@ async function ensureTables() {
       extra_price NUMERIC(10,2) NOT NULL DEFAULT 0
     )
   `);
+  await db.execute(sql`ALTER TABLE addon_templates ADD COLUMN IF NOT EXISTS sort_order INTEGER NOT NULL DEFAULT 0`);
+  await db.execute(sql`ALTER TABLE addon_template_options ADD COLUMN IF NOT EXISTS sort_order INTEGER NOT NULL DEFAULT 0`);
+  await db.execute(sql`ALTER TABLE option_groups ADD COLUMN IF NOT EXISTS sort_order INTEGER NOT NULL DEFAULT 0`);
+  await db.execute(sql`ALTER TABLE addon_templates ADD COLUMN IF NOT EXISTS visibility_condition JSONB DEFAULT NULL`);
+  await db.execute(sql`ALTER TABLE option_groups ADD COLUMN IF NOT EXISTS visibility_condition JSONB DEFAULT NULL`);
+  await db.execute(sql`ALTER TABLE addon_templates ADD COLUMN IF NOT EXISTS free_selections INTEGER NOT NULL DEFAULT 0`);
+  await db.execute(sql`ALTER TABLE option_groups ADD COLUMN IF NOT EXISTS free_selections INTEGER NOT NULL DEFAULT 0`);
 }
 
 export async function getTemplates() {
   await ensureTables();
-  const tmplRows = await db.select().from(addonTemplates);
-  const optRows = await db.select().from(addonTemplateOptions);
+  const tmplRows = await db.select().from(addonTemplates).orderBy(asc(addonTemplates.sortOrder));
+  const optRows = await db.select().from(addonTemplateOptions).orderBy(asc(addonTemplateOptions.sortOrder));
   return tmplRows.map((t) => ({
     ...t,
     options: optRows.filter((o) => o.templateId === t.id),
   }));
 }
 
+export async function reorderTemplates(orderedIds: number[]) {
+  await ensureTables();
+  for (let i = 0; i < orderedIds.length; i++) {
+    await db.update(addonTemplates).set({ sortOrder: i }).where(eq(addonTemplates.id, orderedIds[i]));
+    // Sync sort_order to all option_groups that were cloned from this template
+    const [tmpl] = await db.select().from(addonTemplates).where(eq(addonTemplates.id, orderedIds[i]));
+    if (tmpl) {
+      await db.execute(
+        sql`UPDATE option_groups SET sort_order = ${i} WHERE name->>'fr' = ${(tmpl.name as { fr: string }).fr}`
+      );
+    }
+  }
+  revalidatePath("/admin/options");
+  revalidatePath("/");
+}
+
+export async function reorderTemplateOptions(orderedIds: number[]) {
+  await ensureTables();
+  for (let i = 0; i < orderedIds.length; i++) {
+    await db.update(addonTemplateOptions).set({ sortOrder: i }).where(eq(addonTemplateOptions.id, orderedIds[i]));
+  }
+  revalidatePath("/admin/options");
+}
+
+function parseCondition(formData: FormData): { groupFr: string; optionFr: string } | null {
+  const g = (formData.get("condition_group_fr") as string ?? "").trim();
+  const o = (formData.get("condition_option_fr") as string ?? "").trim();
+  return g && o ? { groupFr: g, optionFr: o } : null;
+}
+
 export async function createTemplate(formData: FormData) {
   await ensureTables();
+  const existing = await db.select({ id: addonTemplates.id }).from(addonTemplates);
   await db.insert(addonTemplates).values({
     name: {
       fr: (formData.get("name_fr") as string).trim(),
@@ -46,11 +84,15 @@ export async function createTemplate(formData: FormData) {
     required: formData.get("required") === "true",
     minSelect: parseInt((formData.get("min_select") as string) ?? "0"),
     maxSelect: parseInt((formData.get("max_select") as string) ?? "1"),
+    freeSelections: parseInt((formData.get("free_selections") as string) ?? "0"),
+    sortOrder: existing.length,
+    visibilityCondition: parseCondition(formData),
   });
   revalidatePath("/admin/options");
 }
 
 export async function updateTemplate(id: number, formData: FormData) {
+  const visibilityCondition = parseCondition(formData);
   await db
     .update(addonTemplates)
     .set({
@@ -62,9 +104,20 @@ export async function updateTemplate(id: number, formData: FormData) {
       required: formData.get("required") === "true",
       minSelect: parseInt((formData.get("min_select") as string) ?? "0"),
       maxSelect: parseInt((formData.get("max_select") as string) ?? "1"),
+      freeSelections: parseInt((formData.get("free_selections") as string) ?? "0"),
+      visibilityCondition,
     })
     .where(eq(addonTemplates.id, id));
+  // Sync settings to all applied option_groups with this template name
+  const [tmpl] = await db.select().from(addonTemplates).where(eq(addonTemplates.id, id));
+  if (tmpl) {
+    const freeSelections = parseInt((formData.get("free_selections") as string) ?? "0");
+    await db.execute(
+      sql`UPDATE option_groups SET visibility_condition = ${visibilityCondition ? JSON.stringify(visibilityCondition) : null}::jsonb, free_selections = ${freeSelections} WHERE name->>'fr' = ${(tmpl.name as { fr: string }).fr}`
+    );
+  }
   revalidatePath("/admin/options");
+  revalidatePath("/");
 }
 
 export async function deleteTemplate(id: number) {
@@ -73,6 +126,7 @@ export async function deleteTemplate(id: number) {
 }
 
 export async function addTemplateOption(templateId: number, formData: FormData) {
+  const existing = await db.select({ id: addonTemplateOptions.id }).from(addonTemplateOptions).where(eq(addonTemplateOptions.templateId, templateId));
   await db.insert(addonTemplateOptions).values({
     templateId,
     name: {
@@ -81,6 +135,7 @@ export async function addTemplateOption(templateId: number, formData: FormData) 
       en: (formData.get("name_en") as string).trim(),
     },
     extraPrice: (formData.get("extra_price") as string).trim() || "0",
+    sortOrder: existing.length,
   });
   revalidatePath("/admin/options");
 }
@@ -144,6 +199,9 @@ export async function applyTemplateToItems(templateId: number, itemIds: number[]
         required: template.required,
         minSelect: template.minSelect,
         maxSelect: template.maxSelect,
+        freeSelections: template.freeSelections ?? 0,
+        sortOrder: template.sortOrder,
+        visibilityCondition: template.visibilityCondition ?? null,
       })
       .returning({ id: optionGroups.id });
 

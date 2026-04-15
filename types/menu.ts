@@ -14,7 +14,9 @@ export type MenuOptionGroup = {
   required: boolean;
   minSelect: number;
   maxSelect: number;
+  freeSelections: number;
   options: MenuOption[];
+  visibilityCondition: { groupFr: string; optionFr: string } | null;
 };
 
 export type MenuItem = {

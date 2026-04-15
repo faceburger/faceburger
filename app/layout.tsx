@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Rubik } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
@@ -16,6 +16,13 @@ export const metadata: Metadata = {
   description: "Commandez vos burgers en ligne",
 };
 
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+};
+
 const themeInitScript = `(function(){try{var k='faceburger-theme';var t=localStorage.getItem(k);if(t==='dark'||t==='light'){document.documentElement.classList.toggle('dark',t==='dark');return}if(matchMedia('(prefers-color-scheme:dark)').matches)document.documentElement.classList.add('dark')}catch(e){}})();`;
 
 export default function RootLayout({
@@ -25,7 +32,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr" dir="ltr" suppressHydrationWarning>
-      <body className={`${rubik.className} bg-white dark:bg-[#121316]`} suppressHydrationWarning style={{ margin: 0 }}>
+      <body className={`${rubik.className} bg-white dark:bg-[#242526]`} suppressHydrationWarning style={{ margin: 0 }}>
         <Script id="faceburger-theme-init" strategy="beforeInteractive">
           {themeInitScript}
         </Script>

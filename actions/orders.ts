@@ -23,15 +23,16 @@ type CreateOrderInput = {
   orderMeta?: Record<string, unknown> | null;
 };
 
-export async function createOrder(input: CreateOrderInput) {
-  await db.insert(orders).values({
+export async function createOrder(input: CreateOrderInput): Promise<number> {
+  const result = await db.insert(orders).values({
     customerName: input.customerName,
     customerPhone: input.customerPhone,
     customerAddress: input.customerAddress,
     items: input.items,
     total: input.total.toFixed(2),
     orderMeta: input.orderMeta ?? null,
-  });
+  }).returning({ id: orders.id });
+  return result[0].id;
 }
 
 export async function getOrders() {

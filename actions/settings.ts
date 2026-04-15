@@ -12,6 +12,9 @@ const DEFAULTS: Record<string, string> = {
   cover_image_url: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200&q=80",
   whatsapp_number: "212600000000",
   maps_url: "https://www.google.com/maps/dir/?api=1&destination=Agdal%2C+Rabat%2C+Maroc",
+  delivery_fee_tiers: '[{"maxKm":5,"fee":10},{"maxKm":10,"fee":20}]',
+  restaurant_lat: "34.0084",
+  restaurant_lng: "-6.8539",
 };
 
 async function ensureTable() {
@@ -48,6 +51,7 @@ export async function saveSettings(formData: FormData) {
   const keys = [
     "restaurant_name", "restaurant_phone", "restaurant_address",
     "restaurant_hours", "cover_image_url", "whatsapp_number",
+    "delivery_fee_tiers", "restaurant_lat", "restaurant_lng",
   ];
   for (const key of keys) {
     const val = (formData.get(key) as string ?? "").trim();
