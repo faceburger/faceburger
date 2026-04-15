@@ -88,19 +88,20 @@ export function CategoryTabs({ categories, locale }: Props) {
   useEffect(() => {
     const el = scrollRef.current;
     if (!el) return;
+    const scrollEl = el;
 
     function updateScrollHintState() {
-      const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
+      const maxScroll = Math.max(0, scrollEl.scrollWidth - scrollEl.clientWidth);
       setCanScroll(maxScroll > 6);
-      setAtEnd(el.scrollLeft >= maxScroll - 6);
-      if (el.scrollLeft > 6) setHasInteracted(true);
+      setAtEnd(scrollEl.scrollLeft >= maxScroll - 6);
+      if (scrollEl.scrollLeft > 6) setHasInteracted(true);
     }
 
     updateScrollHintState();
-    el.addEventListener("scroll", updateScrollHintState, { passive: true });
+    scrollEl.addEventListener("scroll", updateScrollHintState, { passive: true });
     window.addEventListener("resize", updateScrollHintState);
     return () => {
-      el.removeEventListener("scroll", updateScrollHintState);
+      scrollEl.removeEventListener("scroll", updateScrollHintState);
       window.removeEventListener("resize", updateScrollHintState);
     };
   }, [categories]);
