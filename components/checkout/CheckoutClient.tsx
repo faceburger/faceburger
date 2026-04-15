@@ -239,7 +239,7 @@ export function CheckoutClient({ locale, whatsappNumber, settings }: { locale: s
       const pad2 = (n: number) => String(n).padStart(2, "0");
       const dateStr = `${pad2(now.getDate())}/${pad2(now.getMonth() + 1)}/${now.getFullYear()} - ${pad2(now.getHours())}:${pad2(now.getMinutes())}`;
 
-      const sep = "────────────────────";
+      const sep = "────────────";
       const serviceLineFr =
         serviceMode === "delivery" ? "Livraison"
         : serviceMode === "pickup" ? "A emporter"
