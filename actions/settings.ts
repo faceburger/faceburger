@@ -51,7 +51,7 @@ export async function saveSettings(formData: FormData) {
   const keys = [
     "restaurant_name", "restaurant_phone", "restaurant_address",
     "restaurant_hours", "cover_image_url", "whatsapp_number",
-    "delivery_fee_tiers", "restaurant_lat", "restaurant_lng",
+    "maps_url", "delivery_fee_tiers", "restaurant_lat", "restaurant_lng",
   ];
   for (const key of keys) {
     const val = (formData.get(key) as string ?? "").trim();

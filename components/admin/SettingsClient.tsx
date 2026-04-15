@@ -16,6 +16,7 @@ export function SettingsClient({ settings }: Props) {
     restaurant_hours: settings.restaurant_hours ?? "",
     cover_image_url: settings.cover_image_url ?? "",
     whatsapp_number: settings.whatsapp_number ?? "",
+    maps_url: settings.maps_url ?? "",
     restaurant_lat: settings.restaurant_lat ?? "34.0084",
     restaurant_lng: settings.restaurant_lng ?? "-6.8539",
   });
@@ -79,6 +80,7 @@ export function SettingsClient({ settings }: Props) {
             <Field label="Téléphone" value={form.restaurant_phone} onChange={set("restaurant_phone")} placeholder="+212 6 00 00 00 00" />
             <Field label="Adresse" value={form.restaurant_address} onChange={set("restaurant_address")} placeholder="Agdal, Rabat, Maroc" />
             <Field label="Horaires" value={form.restaurant_hours} onChange={set("restaurant_hours")} placeholder="Lun – Dim : 11h00 – 23h00" />
+            <Field label="Lien Google Maps" value={form.maps_url} onChange={set("maps_url")} placeholder="https://www.google.com/maps/dir/?api=1&destination=..." />
           </div>
         </div>
 

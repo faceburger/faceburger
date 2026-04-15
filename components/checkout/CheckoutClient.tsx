@@ -97,6 +97,7 @@ export function CheckoutClient({ locale, whatsappNumber, settings }: { locale: s
   const [locateError, setLocateError] = useState(false);
 
   const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
 
   const deliveryTiers: { maxKm: number; fee: number }[] = (() => {
     try {
@@ -178,7 +179,18 @@ export function CheckoutClient({ locale, whatsappNumber, settings }: { locale: s
 
   async function submitOrder() {
     if (entries.length === 0) return;
+    setSubmitError("");
     setSubmitting(true);
+    const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
+    const popup = !isMobile ? window.open("", "_blank") : null;
+
+    if (!whatsappNumber?.trim()) {
+      if (popup && !popup.closed) popup.close();
+      setSubmitError("Numéro WhatsApp non configuré. Vérifiez les paramètres admin.");
+      setSubmitting(false);
+      return;
+    }
+
     const orderItems = entries.map((e) => ({
       itemId: e.itemId,
       name: e.itemName[loc] ?? e.itemName.fr,
@@ -279,13 +291,14 @@ export function CheckoutClient({ locale, whatsappNumber, settings }: { locale: s
       const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
 
       localStorage.setItem("fb_customer", JSON.stringify({ fullName, countryCode, phone }));
-      const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
       clearCart();
       if (isMobile) window.location.href = url;
-      else window.open(url, "_blank");
+      else if (popup) popup.location.href = url;
+      else window.location.href = url;
       router.replace("/");
     } catch {
-      // Order save failed — stay on page; user can retry
+      if (popup && !popup.closed) popup.close();
+      setSubmitError("Échec de l'envoi. Réessayez dans un instant.");
     } finally {
       setSubmitting(false);
     }
@@ -688,6 +701,11 @@ export function CheckoutClient({ locale, whatsappNumber, settings }: { locale: s
             </>
           )}
         </div>
+        {submitError && (
+          <p className="mt-3 text-sm text-red-500">
+            {submitError}
+          </p>
+        )}
       </div>
     </div>
   );
