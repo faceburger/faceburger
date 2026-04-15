@@ -41,5 +41,5 @@ export async function getOrders() {
 
 export async function deleteOrder(id: number) {
   await db.delete(orders).where(eq(orders.id, id));
-  revalidatePath("/admin/orders");
+  revalidatePath("/regrubecaf/orders");
 }

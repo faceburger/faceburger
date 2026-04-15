@@ -54,7 +54,7 @@ export async function reorderTemplates(orderedIds: number[]) {
       );
     }
   }
-  revalidatePath("/admin/options");
+  revalidatePath("/regrubecaf/options");
   revalidatePath("/");
 }
 
@@ -63,7 +63,7 @@ export async function reorderTemplateOptions(orderedIds: number[]) {
   for (let i = 0; i < orderedIds.length; i++) {
     await db.update(addonTemplateOptions).set({ sortOrder: i }).where(eq(addonTemplateOptions.id, orderedIds[i]));
   }
-  revalidatePath("/admin/options");
+  revalidatePath("/regrubecaf/options");
 }
 
 function parseCondition(formData: FormData): { groupFr: string; optionFr: string } | null {
@@ -88,7 +88,7 @@ export async function createTemplate(formData: FormData) {
     sortOrder: existing.length,
     visibilityCondition: parseCondition(formData),
   });
-  revalidatePath("/admin/options");
+  revalidatePath("/regrubecaf/options");
 }
 
 export async function updateTemplate(id: number, formData: FormData) {
@@ -108,56 +108,133 @@ export async function updateTemplate(id: number, formData: FormData) {
       visibilityCondition,
     })
     .where(eq(addonTemplates.id, id));
-  // Sync settings to all applied option_groups with this template name
+  // Sync ALL settings to every applied option_group cloned from this template
   const [tmpl] = await db.select().from(addonTemplates).where(eq(addonTemplates.id, id));
   if (tmpl) {
-    const freeSelections = parseInt((formData.get("free_selections") as string) ?? "0");
+    const tmplFr = (tmpl.name as { fr: string }).fr;
+    const required   = formData.get("required") === "true";
+    const minSelect  = parseInt((formData.get("min_select")      as string) ?? "0");
+    const maxSelect  = parseInt((formData.get("max_select")      as string) ?? "1");
+    const freeSel    = parseInt((formData.get("free_selections") as string) ?? "0");
     await db.execute(
-      sql`UPDATE option_groups SET visibility_condition = ${visibilityCondition ? JSON.stringify(visibilityCondition) : null}::jsonb, free_selections = ${freeSelections} WHERE name->>'fr' = ${(tmpl.name as { fr: string }).fr}`
+      sql`UPDATE option_groups SET
+        required             = ${required},
+        min_select           = ${minSelect},
+        max_select           = ${maxSelect},
+        free_selections      = ${freeSel},
+        visibility_condition = ${visibilityCondition ? JSON.stringify(visibilityCondition) : null}::jsonb
+      WHERE name->>'fr' = ${tmplFr}`
     );
+
+    // Also re-sync all option prices from the template to every applied group
+    const tmplOptions = await db
+      .select()
+      .from(addonTemplateOptions)
+      .where(eq(addonTemplateOptions.templateId, id));
+
+    const appliedGroups = await db.execute(
+      sql`SELECT id FROM option_groups WHERE name->>'fr' = ${tmplFr}`
+    );
+    for (const row of appliedGroups.rows as { id: number }[]) {
+      for (const tOpt of tmplOptions) {
+        const optFr = (tOpt.name as { fr: string }).fr;
+        await db.execute(
+          sql`UPDATE options SET extra_price = ${tOpt.extraPrice as string} WHERE name->>'fr' = ${optFr} AND group_id = ${row.id}`
+        );
+      }
+    }
   }
-  revalidatePath("/admin/options");
+  revalidatePath("/regrubecaf/options");
   revalidatePath("/");
 }
 
 export async function deleteTemplate(id: number) {
   await db.delete(addonTemplates).where(eq(addonTemplates.id, id));
-  revalidatePath("/admin/options");
+  revalidatePath("/regrubecaf/options");
 }
 
 export async function addTemplateOption(templateId: number, formData: FormData) {
   const existing = await db.select({ id: addonTemplateOptions.id }).from(addonTemplateOptions).where(eq(addonTemplateOptions.templateId, templateId));
+  const newName = {
+    fr: (formData.get("name_fr") as string).trim(),
+    ar: (formData.get("name_ar") as string).trim(),
+    en: (formData.get("name_en") as string).trim(),
+  };
+  const extraPrice = (formData.get("extra_price") as string).trim() || "0";
   await db.insert(addonTemplateOptions).values({
     templateId,
-    name: {
-      fr: (formData.get("name_fr") as string).trim(),
-      ar: (formData.get("name_ar") as string).trim(),
-      en: (formData.get("name_en") as string).trim(),
-    },
-    extraPrice: (formData.get("extra_price") as string).trim() || "0",
+    name: newName,
+    extraPrice,
     sortOrder: existing.length,
   });
-  revalidatePath("/admin/options");
+
+  // Sync to all option_groups that were applied from this template
+  const [template] = await db.select().from(addonTemplates).where(eq(addonTemplates.id, templateId));
+  if (template) {
+    const tmplFr = (template.name as { fr: string }).fr;
+    const appliedGroups = await db.execute(
+      sql`SELECT id FROM option_groups WHERE name->>'fr' = ${tmplFr}`
+    );
+    for (const row of appliedGroups.rows as { id: number }[]) {
+      await db.insert(options).values({ groupId: row.id, name: newName, extraPrice });
+    }
+  }
+
+  revalidatePath("/regrubecaf/options");
+  revalidatePath("/");
 }
 
 export async function updateTemplateOption(id: number, formData: FormData) {
+  // Fetch old name before update so we can match rows in applied groups
+  const [oldOpt] = await db.select().from(addonTemplateOptions).where(eq(addonTemplateOptions.id, id));
+
+  const newName = {
+    fr: (formData.get("name_fr") as string).trim(),
+    ar: (formData.get("name_ar") as string).trim(),
+    en: (formData.get("name_en") as string).trim(),
+  };
+  const newExtraPrice = (formData.get("extra_price") as string).trim() || "0";
+
   await db
     .update(addonTemplateOptions)
-    .set({
-      name: {
-        fr: (formData.get("name_fr") as string).trim(),
-        ar: (formData.get("name_ar") as string).trim(),
-        en: (formData.get("name_en") as string).trim(),
-      },
-      extraPrice: (formData.get("extra_price") as string).trim() || "0",
-    })
+    .set({ name: newName, extraPrice: newExtraPrice })
     .where(eq(addonTemplateOptions.id, id));
-  revalidatePath("/admin/options");
+
+  // Sync to all option_groups applied from this template
+  if (oldOpt) {
+    const oldFr = (oldOpt.name as { fr: string }).fr;
+    const [template] = await db.select().from(addonTemplates).where(eq(addonTemplates.id, oldOpt.templateId));
+    if (template) {
+      const tmplFr = (template.name as { fr: string }).fr;
+      await db.execute(
+        sql`UPDATE options SET name = ${JSON.stringify(newName)}::jsonb, extra_price = ${newExtraPrice} WHERE name->>'fr' = ${oldFr} AND group_id IN (SELECT id FROM option_groups WHERE name->>'fr' = ${tmplFr})`
+      );
+    }
+  }
+
+  revalidatePath("/regrubecaf/options");
+  revalidatePath("/");
 }
 
 export async function deleteTemplateOption(id: number) {
+  // Fetch option + template before deleting so we can clean up applied groups
+  const [opt] = await db.select().from(addonTemplateOptions).where(eq(addonTemplateOptions.id, id));
+
   await db.delete(addonTemplateOptions).where(eq(addonTemplateOptions.id, id));
-  revalidatePath("/admin/options");
+
+  if (opt) {
+    const optFr = (opt.name as { fr: string }).fr;
+    const [template] = await db.select().from(addonTemplates).where(eq(addonTemplates.id, opt.templateId));
+    if (template) {
+      const tmplFr = (template.name as { fr: string }).fr;
+      await db.execute(
+        sql`DELETE FROM options WHERE name->>'fr' = ${optFr} AND group_id IN (SELECT id FROM option_groups WHERE name->>'fr' = ${tmplFr})`
+      );
+    }
+  }
+
+  revalidatePath("/regrubecaf/options");
+  revalidatePath("/");
 }
 
 /**
@@ -216,7 +293,7 @@ export async function applyTemplateToItems(templateId: number, itemIds: number[]
     }
   }
 
-  revalidatePath("/admin/options");
+  revalidatePath("/regrubecaf/options");
   revalidatePath("/");
 }
 
@@ -257,6 +334,6 @@ export async function removeTemplateFromItems(templateId: number, itemIds: numbe
       )
     );
 
-  revalidatePath("/admin/options");
+  revalidatePath("/regrubecaf/options");
   revalidatePath("/");
 }

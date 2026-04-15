@@ -98,7 +98,10 @@ export function ItemDetailSheet({ item, locale, onClose }: Props) {
       let next: SelectedOptions;
 
       if (group.maxSelect === 1) {
-        next = { ...prev, [group.id]: [optionId] };
+        next = {
+          ...prev,
+          [group.id]: current.includes(optionId) ? [] : [optionId],
+        };
       } else if (current.includes(optionId)) {
         next = { ...prev, [group.id]: current.filter((id) => id !== optionId) };
       } else if (current.length >= group.maxSelect) {
@@ -113,7 +116,7 @@ export function ItemDetailSheet({ item, locale, onClose }: Props) {
         if (!cond) return;
         const depGroup = item.optionGroups.find((dg) => dg.name.fr === cond.groupFr);
         if (!depGroup) return;
-        const chosenInDep = g.id === group.id ? (next[group.id] ?? []) : (next[depGroup.id] ?? []);
+        const chosenInDep = next[depGroup.id] ?? [];
         const visible = depGroup.options.some((o) => chosenInDep.includes(o.id) && o.name.fr.startsWith(cond.optionFr));
         if (!visible) next[g.id] = [];
       });
@@ -191,7 +194,6 @@ export function ItemDetailSheet({ item, locale, onClose }: Props) {
         opacity: sheetEntered ? 1 : 0,
         transition: sheetTransition,
         willChange: "transform, opacity",
-        background: "#ffffff",
         borderRadius: 16,
       }
     : {
@@ -201,7 +203,6 @@ export function ItemDetailSheet({ item, locale, onClose }: Props) {
           : "translate3d(0,100%,0)",
         transition: sheetTransition,
         willChange: "transform",
-        background: "#ffffff",
         borderRadius: "16px 16px 0 0",
       };
 
@@ -243,28 +244,18 @@ export function ItemDetailSheet({ item, locale, onClose }: Props) {
 
       <div className="pb-4">
         <h2
-          className="font-bold"
-          style={{ fontSize: 18, color: "#1C1E21", padding: "16px 16px 4px" }}
+          className="px-4 pb-1 pt-4 text-[18px] font-bold text-[#1C1E21] dark:text-[#F5F6F7]"
         >
           {name}
         </h2>
 
         {description && (
-          <p
-            style={{
-              fontSize: 14,
-              color: "#65676B",
-              padding: "0 16px 12px",
-            }}
-          >
+          <p className="px-4 pb-3 text-[14px] text-[#65676B] dark:text-[#B0B3B8]">
             {description}
           </p>
         )}
 
-        <p
-          className="font-bold"
-          style={{ fontSize: 16, color: "#1877F2", padding: "0 16px 12px" }}
-        >
+        <p className="px-4 pb-3 text-[16px] font-bold text-[#1877F2]">
           {item.price.toFixed(2)} MAD
         </p>
 
@@ -277,8 +268,7 @@ export function ItemDetailSheet({ item, locale, onClose }: Props) {
             <div key={group.id} style={{ padding: "0 16px 16px" }}>
               <div className="mb-2 flex items-center gap-2">
                 <p
-                  className="font-semibold uppercase"
-                  style={{ fontSize: 12, color: "#65676B", letterSpacing: "0.05em" }}
+                  className="text-[12px] font-semibold uppercase tracking-[0.05em] text-[#65676B] dark:text-[#B0B3B8]"
                 >
                   {groupName}
                   {group.required && (
@@ -287,8 +277,7 @@ export function ItemDetailSheet({ item, locale, onClose }: Props) {
                 </p>
                 {group.freeSelections > 0 && (
                   <span
-                    className="rounded-md px-1.5 py-0.5 font-semibold"
-                    style={{ fontSize: 10, background: "#E6F4EA", color: "#2E7D32" }}
+                    className="rounded-md bg-[#E6F4EA] px-1.5 py-0.5 text-[10px] font-semibold text-[#2E7D32] dark:bg-[#173221] dark:text-[#6ED38C]"
                   >
                     {group.freeSelections === 1
                       ? "1 incluse"
@@ -300,39 +289,35 @@ export function ItemDetailSheet({ item, locale, onClose }: Props) {
                 {group.options.map((opt) => {
                   const optName = opt.name[loc] ?? opt.name.fr;
                   const isChecked = chosenIds.includes(opt.id);
-                  const isRadio = group.maxSelect === 1;
                   const freeIds = group.freeSelections > 0 ? getFreeOptionIds(group) : null;
                   const isFree = isChecked && freeIds?.has(opt.id);
                   return (
                     <label
                       key={opt.id}
-                      className="flex cursor-pointer items-center gap-3 rounded-lg py-2 px-3"
-                      style={{
-                        background: isChecked ? "#EBF3FF" : "#F0F2F5",
-                      }}
+                      className={`flex cursor-pointer items-center gap-3 rounded-lg px-3 py-2 ${
+                        isChecked
+                          ? "bg-[#EBF3FF] dark:bg-[#1A2A3D]"
+                          : "bg-[#F0F2F5] dark:bg-[#2D2F33]"
+                      }`}
                     >
                       <input
-                        type={isRadio ? "radio" : "checkbox"}
+                        type="checkbox"
                         checked={isChecked}
                         onChange={() => toggleOption(group, opt.id)}
                         className="accent-[#1877F2]"
                         style={{ width: 16, height: 16 }}
                       />
-                      <span style={{ fontSize: 14, color: "#1C1E21", flex: 1 }}>
+                      <span className="flex-1 text-[14px] text-[#1C1E21] dark:text-[#E4E6EB]">
                         {optName}
                       </span>
                       {isFree ? (
                         <span
-                          className="font-semibold"
-                          style={{ fontSize: 12, color: "#2E7D32" }}
+                          className="text-[12px] font-semibold text-[#2E7D32] dark:text-[#6ED38C]"
                         >
                           Incluse
                         </span>
                       ) : opt.extraPrice > 0 ? (
-                        <span
-                          className="font-semibold"
-                          style={{ fontSize: 13, color: "#1877F2" }}
-                        >
+                        <span className="text-[13px] font-semibold text-[#1877F2]">
                           +{opt.extraPrice.toFixed(2)} MAD
                         </span>
                       ) : null}
@@ -352,14 +337,16 @@ export function ItemDetailSheet({ item, locale, onClose }: Props) {
                 ? setQuantity((q) => Math.max(1, q - 1))
                 : onClose()
             }
-            className="flex items-center justify-center font-bold"
+            className={`flex items-center justify-center border border-[#E4E6EB] font-bold dark:border-[#3a3b3d] ${
+              quantity > 1
+                ? "text-[#1C1E21] dark:text-[#E4E6EB]"
+                : "text-[#65676B] dark:text-[#B0B3B8]"
+            }`}
             style={{
               width: 32,
               height: 32,
               borderRadius: "50%",
-              border: "1px solid #E4E6EB",
               fontSize: 20,
-              color: quantity > 1 ? "#1C1E21" : "#65676B",
             }}
             aria-label={
               quantity > 1
@@ -374,22 +361,20 @@ export function ItemDetailSheet({ item, locale, onClose }: Props) {
             )}
           </button>
           <span
-            className="font-semibold"
-            style={{ fontSize: 18, minWidth: 32, textAlign: "center", color: "#1C1E21" }}
+            className="text-center text-[18px] font-semibold text-[#1C1E21] dark:text-[#E4E6EB]"
+            style={{ minWidth: 32 }}
           >
             {quantity}
           </span>
           <button
             type="button"
             onClick={() => setQuantity((q) => q + 1)}
-            className="flex items-center justify-center font-bold"
+            className="flex items-center justify-center border border-[#E4E6EB] font-bold text-[#1C1E21] dark:border-[#3a3b3d] dark:text-[#E4E6EB]"
             style={{
               width: 32,
               height: 32,
               borderRadius: "50%",
-              border: "1px solid #E4E6EB",
               fontSize: 20,
-              color: "#1C1E21",
             }}
           >
             +
@@ -420,7 +405,7 @@ export function ItemDetailSheet({ item, locale, onClose }: Props) {
         className={
           isDesktop
             ? "fixed z-50 flex w-full flex-col overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-[#18181b] dark:shadow-[0_24px_80px_rgba(0,0,0,0.55)]"
-            : "fixed bottom-0 left-0 right-0 z-50 w-full max-w-none overflow-hidden"
+            : "fixed bottom-0 left-0 right-0 z-50 w-full max-w-none overflow-hidden bg-white dark:bg-[#18181b]"
         }
         style={panelStyle}
         onTouchStart={isDesktop ? undefined : handleTouchStart}

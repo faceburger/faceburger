@@ -347,7 +347,7 @@ export function CheckoutClient({ locale, whatsappNumber, settings }: { locale: s
         {step === 1 && (
           <div className="mt-5 flex flex-col gap-4">
             <label className="flex flex-col gap-1.5">
-              <span className="text-[13px] font-semibold text-[#65676B]">
+              <span className="text-[13px] font-semibold text-[#65676B] dark:text-[#B0B3B8]">
                 {t("labels.name")}
               </span>
               <input
@@ -355,18 +355,18 @@ export function CheckoutClient({ locale, whatsappNumber, settings }: { locale: s
                 onChange={(e) => setFullName(e.target.value)}
                 placeholder={t("placeholders.name")}
                 autoComplete="name"
-                className="min-h-[48px] w-full rounded-xl border border-[#E4E6EB] px-3 text-[16px] outline-none focus:border-[#1877F2]"
+                className="min-h-[48px] w-full rounded-xl border border-[#E4E6EB] bg-white px-3 text-[16px] text-[#1C1E21] outline-none focus:border-[#1877F2] dark:border-[#3a3b3d] dark:bg-[#1c1e21] dark:text-[#E4E6EB]"
               />
             </label>
             <div>
-              <span className="text-[13px] font-semibold text-[#65676B]">
+              <span className="text-[13px] font-semibold text-[#65676B] dark:text-[#B0B3B8]">
                 {t("labels.phone")}
               </span>
               <div className="mt-1.5 flex gap-2">
                 <select
                   value={countryCode}
                   onChange={(e) => setCountryCode(e.target.value)}
-                  className="min-h-[48px] shrink-0 rounded-xl border border-[#E4E6EB] bg-white px-2 text-[16px] font-medium"
+                  className="min-h-[48px] shrink-0 rounded-xl border border-[#E4E6EB] bg-white px-2 text-[16px] font-medium text-[#1C1E21] outline-none focus:border-[#1877F2] dark:border-[#3a3b3d] dark:bg-[#1c1e21] dark:text-[#E4E6EB]"
                 >
                   {COUNTRY_OPTIONS.map((c) => (
                     <option key={c.code} value={c.code}>
@@ -380,7 +380,7 @@ export function CheckoutClient({ locale, whatsappNumber, settings }: { locale: s
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder={t("placeholders.phone")}
-                  className="min-h-[48px] min-w-0 flex-1 rounded-xl border border-[#E4E6EB] px-3 text-[16px] outline-none focus:border-[#1877F2]"
+                  className="min-h-[48px] min-w-0 flex-1 rounded-xl border border-[#E4E6EB] bg-white px-3 text-[16px] text-[#1C1E21] outline-none focus:border-[#1877F2] dark:border-[#3a3b3d] dark:bg-[#1c1e21] dark:text-[#E4E6EB]"
                 />
               </div>
             </div>
@@ -577,7 +577,7 @@ export function CheckoutClient({ locale, whatsappNumber, settings }: { locale: s
         {/* Step 4 */}
         {step === 4 && (
           <div className="mt-5 flex flex-col gap-5">
-            <div className="rounded-2xl border border-[#E4E6EB] bg-[#FAFBFC] p-4">
+            <div className="rounded-2xl border border-[#E4E6EB] bg-[#FAFBFC] p-4 dark:border-[#3a3b3d] dark:bg-[#1c1e21]">
               <RecapRow
                 label={t("labels.fullName")}
                 value={fullName}
@@ -599,15 +599,15 @@ export function CheckoutClient({ locale, whatsappNumber, settings }: { locale: s
               />
             </div>
 
-            <div className="rounded-2xl border border-[#E4E6EB] p-4">
-              <div className="flex justify-between text-[15px] text-[#65676B]">
+            <div className="rounded-2xl border border-[#E4E6EB] p-4 dark:border-[#3a3b3d] dark:bg-[#1c1e21]">
+              <div className="flex justify-between text-[15px] text-[#65676B] dark:text-[#B0B3B8]">
                 <span>{t("labels.subtotal")}</span>
                 <span className="tabular-nums">
                   {subtotal.toFixed(2)} {t("currency")}
                 </span>
               </div>
               {deliveryFee > 0 ? (
-                <div className="mt-2 flex justify-between text-[15px] text-[#65676B]">
+                <div className="mt-2 flex justify-between text-[15px] text-[#65676B] dark:text-[#B0B3B8]">
                   <span>{t("labels.deliveryFee")}</span>
                   <span className="tabular-nums">
                     {deliveryFee.toFixed(2)} {t("currency")}
@@ -615,9 +615,9 @@ export function CheckoutClient({ locale, whatsappNumber, settings }: { locale: s
                 </div>
               ) : null}
               <div
-                className="my-3 border-t border-[#E4E6EB]"
+                className="my-3 border-t border-[#E4E6EB] dark:border-[#3a3b3d]"
               />
-              <div className="flex justify-between text-[17px] font-bold text-[#1C1E21]">
+              <div className="flex justify-between text-[17px] font-bold text-[#1C1E21] dark:text-[#E4E6EB]">
                 <span>{t("labels.total")}</span>
                 <span className="tabular-nums text-[#1877F2]">
                   {grandTotal.toFixed(2)} {t("currency")}
@@ -634,7 +634,7 @@ export function CheckoutClient({ locale, whatsappNumber, settings }: { locale: s
               <button
                 type="button"
                 onClick={() => router.replace("/")}
-                className="min-h-[48px] flex-1 rounded-xl border border-[#E4E6EB] bg-[#F0F2F5] text-[14px] font-semibold text-[#1C1E21]"
+                className="min-h-[48px] flex-1 rounded-xl border border-[#E4E6EB] bg-[#F0F2F5] text-[14px] font-semibold text-[#1C1E21] dark:border-[#3a3b3d] dark:bg-[#3a3b3d] dark:text-[#E4E6EB]"
               >
                 {t("actions.home")}
               </button>
@@ -652,7 +652,7 @@ export function CheckoutClient({ locale, whatsappNumber, settings }: { locale: s
               <button
                 type="button"
                 onClick={() => setStep(retreatStep(4, serviceMode))}
-                className="min-h-[48px] flex-1 rounded-xl border border-[#E4E6EB] bg-[#F0F2F5] text-[14px] font-semibold text-[#1C1E21]"
+                className="min-h-[48px] flex-1 rounded-xl border border-[#E4E6EB] bg-[#F0F2F5] text-[14px] font-semibold text-[#1C1E21] dark:border-[#3a3b3d] dark:bg-[#3a3b3d] dark:text-[#E4E6EB]"
               >
                 {t("actions.back")}
               </button>
@@ -670,7 +670,7 @@ export function CheckoutClient({ locale, whatsappNumber, settings }: { locale: s
               <button
                 type="button"
                 onClick={() => setStep(retreatStep(step, serviceMode))}
-                className="min-h-[48px] flex-1 rounded-xl border border-[#E4E6EB] bg-[#F0F2F5] text-[14px] font-semibold text-[#1C1E21]"
+                className="min-h-[48px] flex-1 rounded-xl border border-[#E4E6EB] bg-[#F0F2F5] text-[14px] font-semibold text-[#1C1E21] dark:border-[#3a3b3d] dark:bg-[#3a3b3d] dark:text-[#E4E6EB]"
               >
                 {t("actions.back")}
               </button>
@@ -695,11 +695,11 @@ export function CheckoutClient({ locale, whatsappNumber, settings }: { locale: s
 
 function RecapRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="border-b border-[#ECEEF2] py-2.5 last:border-0">
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-[#8A8D91]">
+    <div className="border-b border-[#ECEEF2] py-2.5 last:border-0 dark:border-[#3a3b3d]">
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-[#8A8D91] dark:text-[#9BA0A6]">
         {label}
       </p>
-      <p className="mt-1 text-[14px] leading-snug text-[#1C1E21]">{value}</p>
+      <p className="mt-1 text-[14px] leading-snug text-[#1C1E21] dark:text-[#E4E6EB]">{value}</p>
     </div>
   );
 }

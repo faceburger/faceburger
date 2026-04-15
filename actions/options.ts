@@ -32,7 +32,7 @@ export async function createOptionGroup(formData: FormData) {
     minSelect: parseInt((formData.get("min_select") as string) ?? "0"),
     maxSelect: parseInt((formData.get("max_select") as string) ?? "1"),
   });
-  revalidatePath("/admin/options");
+  revalidatePath("/regrubecaf/options");
 }
 
 export async function updateOptionGroup(id: number, formData: FormData) {
@@ -49,12 +49,12 @@ export async function updateOptionGroup(id: number, formData: FormData) {
       maxSelect: parseInt((formData.get("max_select") as string) ?? "1"),
     })
     .where(eq(optionGroups.id, id));
-  revalidatePath("/admin/options");
+  revalidatePath("/regrubecaf/options");
 }
 
 export async function deleteOptionGroup(id: number) {
   await db.delete(optionGroups).where(eq(optionGroups.id, id));
-  revalidatePath("/admin/options");
+  revalidatePath("/regrubecaf/options");
 }
 
 export async function createOption(formData: FormData) {
@@ -68,7 +68,7 @@ export async function createOption(formData: FormData) {
     },
     extraPrice: (formData.get("extra_price") as string).trim() || "0",
   });
-  revalidatePath("/admin/options");
+  revalidatePath("/regrubecaf/options");
 }
 
 export async function updateOption(id: number, formData: FormData) {
@@ -83,10 +83,10 @@ export async function updateOption(id: number, formData: FormData) {
       extraPrice: (formData.get("extra_price") as string).trim() || "0",
     })
     .where(eq(options.id, id));
-  revalidatePath("/admin/options");
+  revalidatePath("/regrubecaf/options");
 }
 
 export async function deleteOption(id: number) {
   await db.delete(options).where(eq(options.id, id));
-  revalidatePath("/admin/options");
+  revalidatePath("/regrubecaf/options");
 }

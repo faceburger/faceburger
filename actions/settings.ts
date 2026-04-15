@@ -42,7 +42,7 @@ export async function upsertSetting(key: string, value: string) {
     .insert(restaurantSettings)
     .values({ key, value })
     .onConflictDoUpdate({ target: restaurantSettings.key, set: { value } });
-  revalidatePath("/admin/settings");
+  revalidatePath("/regrubecaf/settings");
   revalidatePath("/");
 }
 
@@ -60,6 +60,6 @@ export async function saveSettings(formData: FormData) {
       .values({ key, value: val })
       .onConflictDoUpdate({ target: restaurantSettings.key, set: { value: val } });
   }
-  revalidatePath("/admin/settings");
+  revalidatePath("/regrubecaf/settings");
   revalidatePath("/");
 }

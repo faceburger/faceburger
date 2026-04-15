@@ -21,7 +21,7 @@ export default function AdminLoginPage() {
       body: JSON.stringify({ password }),
     });
     if (res.ok) {
-      router.push("/admin/categories");
+      router.push("/regrubecaf/categories");
     } else {
       const data = await res.json();
       setError(data.error ?? "Erreur");

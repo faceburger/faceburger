@@ -9,7 +9,7 @@ export default async function DashboardLayout({
 }) {
   const store = await cookies();
   if (store.get("admin_session")?.value !== "authenticated") {
-    redirect("/admin/login");
+    redirect("/regrubecaf/login");
   }
 
   return (

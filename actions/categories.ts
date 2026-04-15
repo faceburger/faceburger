@@ -22,7 +22,7 @@ export async function createCategory(formData: FormData) {
     imageUrl,
     sortOrder,
   });
-  revalidatePath("/admin/categories");
+  revalidatePath("/regrubecaf/categories");
 }
 
 export async function updateCategory(id: number, formData: FormData) {
@@ -41,12 +41,12 @@ export async function updateCategory(id: number, formData: FormData) {
       sortOrder,
     })
     .where(eq(categories.id, id));
-  revalidatePath("/admin/categories");
+  revalidatePath("/regrubecaf/categories");
 }
 
 export async function deleteCategory(id: number) {
   await db.delete(categories).where(eq(categories.id, id));
-  revalidatePath("/admin/categories");
+  revalidatePath("/regrubecaf/categories");
 }
 
 export async function moveCategoryOrder(id: number, direction: "up" | "down") {
@@ -59,5 +59,5 @@ export async function moveCategoryOrder(id: number, direction: "up" | "down") {
   const b = all[swapIdx];
   await db.update(categories).set({ sortOrder: b.sortOrder }).where(eq(categories.id, a.id));
   await db.update(categories).set({ sortOrder: a.sortOrder }).where(eq(categories.id, b.id));
-  revalidatePath("/admin/categories");
+  revalidatePath("/regrubecaf/categories");
 }

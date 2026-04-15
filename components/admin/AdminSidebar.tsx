@@ -4,11 +4,11 @@ import { usePathname, useRouter } from "next/navigation";
 import { LayoutGrid, Package, Sliders, ClipboardList, Settings2, LogOut } from "lucide-react";
 
 const links = [
-  { href: "/admin/categories", label: "Catégories", icon: LayoutGrid },
-  { href: "/admin/items", label: "Articles", icon: Package },
-  { href: "/admin/options", label: "Options", icon: Sliders },
-  { href: "/admin/orders", label: "Commandes", icon: ClipboardList },
-  { href: "/admin/settings", label: "Paramètres", icon: Settings2 },
+  { href: "/regrubecaf/categories", label: "Catégories", icon: LayoutGrid },
+  { href: "/regrubecaf/items", label: "Articles", icon: Package },
+  { href: "/regrubecaf/options", label: "Options", icon: Sliders },
+  { href: "/regrubecaf/orders", label: "Commandes", icon: ClipboardList },
+  { href: "/regrubecaf/settings", label: "Paramètres", icon: Settings2 },
 ];
 
 export function AdminSidebar() {
@@ -17,7 +17,7 @@ export function AdminSidebar() {
 
   async function handleLogout() {
     await fetch("/api/admin/auth", { method: "DELETE" });
-    router.push("/admin/login");
+    router.push("/regrubecaf/login");
   }
 
   return (

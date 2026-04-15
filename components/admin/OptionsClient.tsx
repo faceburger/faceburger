@@ -17,13 +17,11 @@ import {
   reorderTemplateOptions,
 } from "@/actions/addonTemplates";
 import { ChevronUp, ChevronDown } from "lucide-react";
-import { useRouter } from "next/navigation";
-
 /* ─── Types ─────────────────────────────────────────── */
 type Item = { id: number; name: { fr: string; ar: string; en: string }; categoryId: number };
 type Category = { id: number; name: { fr: string; ar: string; en: string } };
 type TmplOption = { id: number; templateId: number; name: { fr: string; ar: string; en: string }; extraPrice: string };
-type Template = { id: number; name: { fr: string; ar: string; en: string }; required: boolean; minSelect: number; maxSelect: number; options: TmplOption[] };
+type Template = { id: number; name: { fr: string; ar: string; en: string }; required: boolean; minSelect: number; maxSelect: number; freeSelections: number; visibilityCondition: { groupFr: string; optionFr: string } | null; options: TmplOption[] };
 
 const emptyGroup = { name_fr: "", name_ar: "", name_en: "", required: "false", min_select: "0", max_select: "1", free_selections: "0", condition_group_fr: "", condition_option_fr: "" };
 const emptyOpt   = { name_fr: "", name_ar: "", name_en: "", extra_price: "0" };
@@ -65,7 +63,6 @@ function TemplatesTab({
   items: Item[];
   categories: Category[];
 }) {
-  const router = useRouter();
   const [, startTransition] = useTransition();
   const [templates, setTemplates] = useState(initialTemplates);
   const [showAdd, setShowAdd] = useState(false);
@@ -86,7 +83,6 @@ function TemplatesTab({
     startTransition(async () => {
       const fresh = await getTemplates();
       setTemplates(fresh as unknown as Template[]);
-      router.refresh();
     });
   }
 
@@ -267,10 +263,10 @@ function TemplatesTab({
                 <div className="flex-1 min-w-0">
                   <p className="font-bold text-sm" style={{ color: "#1C1E21" }}>{tmpl.name.fr}</p>
                   <p className="text-xs mt-0.5" style={{ color: "#65676B" }}>
-                    {tmpl.required ? "Requis" : "Optionnel"} · {tmpl.maxSelect === 1 ? "Choix unique" : "Choix multiple"} · {tmpl.options.length} option{tmpl.options.length !== 1 ? "s" : ""}
-                    {(tmpl as any).visibilityCondition && (
+                    {tmpl.required ? "Requis" : "Optionnel"} · {tmpl.maxSelect === 1 ? "Choix unique" : `Choix multiple (max ${tmpl.maxSelect}${tmpl.freeSelections > 0 ? `, ${tmpl.freeSelections} incluse${tmpl.freeSelections > 1 ? "s" : ""}` : ""})`} · {tmpl.options.length} option{tmpl.options.length !== 1 ? "s" : ""}
+                    {tmpl.visibilityCondition && (
                       <span className="ms-2 rounded-md px-1.5 py-0.5 text-xs font-medium" style={{ background: "#EBF3FF", color: "#1877F2" }}>
-                        Si {(tmpl as any).visibilityCondition.groupFr} → {(tmpl as any).visibilityCondition.optionFr}
+                        Si {tmpl.visibilityCondition.groupFr} → {tmpl.visibilityCondition.optionFr}
                       </span>
                     )}
                   </p>
@@ -289,7 +285,7 @@ function TemplatesTab({
                   <Zap size={13} /> Appliquer
                 </button>
                 <button
-                  onClick={() => { setEditId(tmpl.id); setTmplForm({ name_fr: tmpl.name.fr, name_ar: tmpl.name.ar, name_en: tmpl.name.en, required: String(tmpl.required), min_select: String(tmpl.minSelect), max_select: String(tmpl.maxSelect), free_selections: String((tmpl as any).freeSelections ?? 0), condition_group_fr: (tmpl as any).visibilityCondition?.groupFr ?? "", condition_option_fr: (tmpl as any).visibilityCondition?.optionFr ?? "" }); }}
+                  onClick={() => { setEditId(tmpl.id); setTmplForm({ name_fr: tmpl.name.fr, name_ar: tmpl.name.ar, name_en: tmpl.name.en, required: String(tmpl.required), min_select: String(tmpl.minSelect), max_select: String(tmpl.maxSelect), free_selections: String(tmpl.freeSelections ?? 0), condition_group_fr: tmpl.visibilityCondition?.groupFr ?? "", condition_option_fr: tmpl.visibilityCondition?.optionFr ?? "" }); }}
                   className="rounded-xl p-2 hover:bg-[#F0F2F5] transition-colors"
                 >
                   <Pencil size={15} color="#65676B" />

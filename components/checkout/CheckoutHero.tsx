@@ -127,19 +127,18 @@ export function CheckoutHero() {
                 onClick={() => setLangOpen(false)}
               />
               <div
-                className="absolute end-0 top-[calc(100%+6px)] z-20 min-w-[94px] overflow-hidden rounded-[10px] border border-[#E4E6EB] bg-white shadow-lg"
+                className="absolute end-0 top-[calc(100%+6px)] z-20 min-w-[94px] overflow-hidden rounded-[10px] border border-[#E4E6EB] bg-white shadow-lg dark:border-[#3a3b3d] dark:bg-[#1c1e21]"
               >
                 {LOCALES.map((l) => (
                   <button
                     key={l}
                     type="button"
                     onClick={() => switchLocale(l)}
-                    className="block w-full px-3.5 py-2.5 text-start text-[13px] font-semibold transition-colors"
-                    style={{
-                      color: currentLocale === l ? "#1877F2" : "#1C1E21",
-                      background:
-                        currentLocale === l ? "#EBF3FF" : "transparent",
-                    }}
+                    className={`block w-full px-3.5 py-2.5 text-start text-[13px] font-semibold transition-colors ${
+                      currentLocale === l
+                        ? "bg-[#EBF3FF] text-[#1877F2] dark:bg-[#1A2A3D]"
+                        : "text-[#1C1E21] hover:bg-[#F5F6F7] dark:text-[#E4E6EB] dark:hover:bg-[#2A2C31]"
+                    }`}
                   >
                     {t(`lang.${l}`)}
                   </button>

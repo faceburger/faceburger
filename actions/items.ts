@@ -27,7 +27,7 @@ export async function createItem(formData: FormData) {
     available: formData.get("available") === "true",
     sortOrder: parseInt((formData.get("sort_order") as string) ?? "0"),
   });
-  revalidatePath("/admin/items");
+  revalidatePath("/regrubecaf/items");
 }
 
 export async function updateItem(id: number, formData: FormData) {
@@ -51,15 +51,15 @@ export async function updateItem(id: number, formData: FormData) {
       sortOrder: parseInt((formData.get("sort_order") as string) ?? "0"),
     })
     .where(eq(items.id, id));
-  revalidatePath("/admin/items");
+  revalidatePath("/regrubecaf/items");
 }
 
 export async function toggleItemAvailable(id: number, available: boolean) {
   await db.update(items).set({ available }).where(eq(items.id, id));
-  revalidatePath("/admin/items");
+  revalidatePath("/regrubecaf/items");
 }
 
 export async function deleteItem(id: number) {
   await db.delete(items).where(eq(items.id, id));
-  revalidatePath("/admin/items");
+  revalidatePath("/regrubecaf/items");
 }
