@@ -499,14 +499,25 @@ export function CheckoutClient({ locale, whatsappNumber, settings }: { locale: s
 
             {/* GPS pin block */}
             <div className="flex flex-col gap-3 rounded-2xl border border-[#E4E6EB] bg-[#FAFBFC] p-4 dark:border-[#3a3b3d] dark:bg-[#1c1e21]">
-              <p className="text-[13px] text-[#65676B] dark:text-[#B0B3B8]">
-                Un lien Maps sera joint à votre commande.
-              </p>
+              <div className="flex items-start justify-between gap-3">
+                <p className="text-[16px] font-bold text-[#1C1E21] dark:text-[#E4E6EB]">
+                  Localisation GPS
+                </p>
+                <span
+                  className={`shrink-0 rounded-full px-2.5 py-1 text-[12px] font-semibold ${
+                    gpsCoords
+                      ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/50 dark:text-emerald-300"
+                      : "bg-amber-100 text-amber-700 dark:bg-amber-950/50 dark:text-amber-300"
+                  }`}
+                >
+                  {gpsCoords ? "Position OK" : "À localiser"}
+                </span>
+              </div>
               <button
                 type="button"
                 onClick={handleLocate}
                 disabled={locating}
-                className={`flex min-h-[50px] w-full items-center justify-center gap-2.5 rounded-xl text-[14px] font-semibold transition-all active:scale-[0.98] disabled:opacity-60 ${
+                className={`flex min-h-[58px] w-full items-center justify-center gap-3 rounded-xl text-[16px] font-semibold transition-all active:scale-[0.98] disabled:opacity-60 ${
                   gpsCoords
                     ? "bg-emerald-500 text-white shadow-sm"
                     : "bg-[#1877F2] text-white shadow-sm"
@@ -514,32 +525,31 @@ export function CheckoutClient({ locale, whatsappNumber, settings }: { locale: s
               >
                 {locating ? (
                   <>
-                    <svg className="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
+                    <svg className="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" aria-hidden>
                       <path d="M21 12a9 9 0 1 1-6.219-8.56" />
                     </svg>
-                    Localisation en cours…
+                    Détection en cours…
                   </>
                 ) : gpsCoords ? (
                   <>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
                       <polyline points="20 6 9 17 4 12" />
                     </svg>
-                    Position épinglée — ré-épingler
+                    Actualiser ma position
                   </>
                 ) : (
                   <>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
-                      <line x1="12" y1="2" x2="12" y2="6" /><line x1="12" y1="18" x2="12" y2="22" />
-                      <line x1="2" y1="12" x2="6" y2="12" /><line x1="18" y1="12" x2="22" y2="12" />
-                      <circle cx="12" cy="12" r="4" />
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.25" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+                      <path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12Z" />
+                      <circle cx="12" cy="10" r="2.5" />
                     </svg>
-                    Épingler ma localisation
+                    Détecter ma position
                   </>
                 )}
               </button>
 
               {locateError && (
-                <p className="text-center text-[12px] text-red-500">
+                <p className="text-center text-[13px] text-red-500">
                   Accès refusé. Autorisez la localisation dans les paramètres de votre navigateur.
                 </p>
               )}
@@ -548,31 +558,31 @@ export function CheckoutClient({ locale, whatsappNumber, settings }: { locale: s
             {/* Address fields */}
             <div className="flex flex-col gap-3">
               <label className="flex flex-col gap-1.5">
-                <span className="text-[13px] font-semibold text-[#65676B] dark:text-[#B0B3B8]">
+                <span className="text-[14px] font-semibold text-[#65676B] dark:text-[#B0B3B8]">
                   Adresse <span className="text-red-400">*</span>
                 </span>
                 <input
                   value={addressLine}
                   onChange={(e) => setAddressLine(e.target.value)}
                   placeholder="Rue, quartier, ville…"
-                  className="min-h-[48px] w-full rounded-xl border border-[#E4E6EB] bg-white px-3 text-[14px] outline-none focus:border-[#1877F2] dark:border-[#3a3b3d] dark:bg-[#1c1e21] dark:text-[#E4E6EB]"
+                  className="min-h-[48px] w-full rounded-xl border border-[#E4E6EB] bg-white px-3 text-[16px] outline-none focus:border-[#1877F2] dark:border-[#3a3b3d] dark:bg-[#1c1e21] dark:text-[#E4E6EB]"
                 />
               </label>
 
               <label className="flex flex-col gap-1.5">
-                <span className="text-[13px] font-semibold text-[#65676B] dark:text-[#B0B3B8]">
+                <span className="text-[14px] font-semibold text-[#65676B] dark:text-[#B0B3B8]">
                   Appartement / Étage
                 </span>
                 <input
                   value={aptNumber}
                   onChange={(e) => setAptNumber(e.target.value)}
                   placeholder="Ex : Appt 3, 2ème étage…"
-                  className="min-h-[48px] w-full rounded-xl border border-[#E4E6EB] bg-white px-3 text-[14px] outline-none focus:border-[#1877F2] dark:border-[#3a3b3d] dark:bg-[#1c1e21] dark:text-[#E4E6EB]"
+                  className="min-h-[48px] w-full rounded-xl border border-[#E4E6EB] bg-white px-3 text-[16px] outline-none focus:border-[#1877F2] dark:border-[#3a3b3d] dark:bg-[#1c1e21] dark:text-[#E4E6EB]"
                 />
               </label>
 
               <label className="flex flex-col gap-1.5">
-                <span className="text-[13px] font-semibold text-[#65676B] dark:text-[#B0B3B8]">
+                <span className="text-[14px] font-semibold text-[#65676B] dark:text-[#B0B3B8]">
                   Instructions supplémentaires
                 </span>
                 <textarea

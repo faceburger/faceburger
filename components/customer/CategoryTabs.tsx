@@ -18,6 +18,9 @@ const GAP = 12; // gap-3
 
 export function CategoryTabs({ categories, locale }: Props) {
   const [activeId, setActiveId] = useState<number>(categories[0]?.id ?? 0);
+  const [canScroll, setCanScroll] = useState(false);
+  const [atEnd, setAtEnd] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
   const activeIdRef = useRef<number>(categories[0]?.id ?? 0);
   const scrollRef = useRef<HTMLDivElement>(null);
   const stickyRef = useRef<HTMLDivElement>(null);
@@ -81,10 +84,32 @@ export function CategoryTabs({ categories, locale }: Props) {
     };
   }, [categories]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Horizontal overflow state → show swipe hint only when useful
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+
+    function updateScrollHintState() {
+      const maxScroll = Math.max(0, el.scrollWidth - el.clientWidth);
+      setCanScroll(maxScroll > 6);
+      setAtEnd(el.scrollLeft >= maxScroll - 6);
+      if (el.scrollLeft > 6) setHasInteracted(true);
+    }
+
+    updateScrollHintState();
+    el.addEventListener("scroll", updateScrollHintState, { passive: true });
+    window.addEventListener("resize", updateScrollHintState);
+    return () => {
+      el.removeEventListener("scroll", updateScrollHintState);
+      window.removeEventListener("resize", updateScrollHintState);
+    };
+  }, [categories]);
+
   function handleClick(catId: number) {
     const el = document.getElementById(`category-${catId}`);
     if (!el) return;
 
+    setHasInteracted(true);
     lockUntil.current = Date.now() + 1500;
     activeIdRef.current = catId;
     setActiveId(catId);
@@ -135,7 +160,7 @@ export function CategoryTabs({ categories, locale }: Props) {
       className="sticky top-0 z-40 bg-[#F0F2F5] dark:bg-[#1e1f20] isolate"
     >
       <div className="mx-auto w-full max-w-[480px] px-4 py-3 lg:max-w-[1200px]">
-        <div className="flex items-center">
+        <div className="relative flex items-center">
           {/* All cards scrollable */}
           <div
             ref={scrollRef}
@@ -146,7 +171,9 @@ export function CategoryTabs({ categories, locale }: Props) {
             }}
           >
             <div
-              className="flex w-max items-center px-2 py-2"
+              className={`flex w-max items-center px-2 py-2 ${
+                canScroll && !atEnd && !hasInteracted ? "swipe-giggle" : ""
+              }`}
               style={{ gap: GAP }}
             >
               {categories.map((cat) => (
@@ -154,8 +181,33 @@ export function CategoryTabs({ categories, locale }: Props) {
               ))}
             </div>
           </div>
+          {canScroll && !atEnd ? (
+            <div className="pointer-events-none absolute bottom-2 right-0 top-2 w-12 bg-gradient-to-l from-[#F0F2F5] to-transparent dark:from-[#1e1f20]" />
+          ) : null}
         </div>
       </div>
+      <style jsx>{`
+        .swipe-giggle {
+          animation: swipeGiggle 2.8s ease-in-out infinite;
+          will-change: transform;
+        }
+        @keyframes swipeGiggle {
+          0%,
+          60%,
+          100% {
+            transform: translateX(0);
+          }
+          72% {
+            transform: translateX(-32px);
+          }
+          84% {
+            transform: translateX(0);
+          }
+          92% {
+            transform: translateX(-16px);
+          }
+        }
+      `}</style>
     </div>
   );
 }
