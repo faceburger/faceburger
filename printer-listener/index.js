@@ -4,14 +4,13 @@ var fs = require("fs").promises;
 var os = require("os");
 var path = require("path");
 var spawn = require("child_process").spawn;
-var exec = require("child_process").exec;
 var Pool = require("pg").Pool;
 
 var DATABASE_URL = process.env.DATABASE_URL;
 var PRINTER_NAME = process.env.PRINTER_NAME;
 var POLL_MS = parseInt(process.env.POLL_MS || "3000", 10);
 var TIMEZONE = process.env.TIMEZONE || "Africa/Casablanca";
-var LINE_WIDTH = parseInt(process.env.LINE_WIDTH || "40", 10);
+var LINE_WIDTH = parseInt(process.env.LINE_WIDTH || "42", 10);
 
 if (!DATABASE_URL) {
   console.error("[printer-listener] Missing DATABASE_URL in .env");
@@ -31,10 +30,10 @@ var pool = new Pool({
   ssl: { rejectUnauthorized: false },
 });
 
+// ─── Utilities ────────────────────────────────────────────────────────────────
+
 function wait(ms) {
-  return new Promise(function (resolve) {
-    setTimeout(resolve, ms);
-  });
+  return new Promise(function (resolve) { setTimeout(resolve, ms); });
 }
 
 function safeGet(obj, key, fallback) {
@@ -50,74 +49,16 @@ function money(value) {
   return num.toFixed(2);
 }
 
-function normalizeServiceMode(serviceMode) {
-  if (serviceMode === "delivery") return "LIVRAISON";
-  if (serviceMode === "pickup") return "A EMPORTER";
-  if (serviceMode === "dine_in") return "SUR PLACE";
-  return "NON DEFINI";
-}
-
-function formatDate(dateValue) {
-  var date = new Date(dateValue);
-  try {
-    var fmt = new Intl.DateTimeFormat("fr-FR", {
-      timeZone: TIMEZONE,
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: false,
-    });
-    if (fmt.formatToParts) {
-      var p = {};
-      fmt.formatToParts(date).forEach(function (part) { p[part.type] = part.value; });
-      return p.day + "/" + p.month + "/" + p.year + " - " + p.hour + ":" + p.minute;
-    }
-    return fmt.format(date);
-  } catch (_err) {
-    try {
-      var fmt2 = new Intl.DateTimeFormat("fr-FR", {
-        year: "numeric",
-        month: "2-digit",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false,
-      });
-      if (fmt2.formatToParts) {
-        var p2 = {};
-        fmt2.formatToParts(date).forEach(function (part) { p2[part.type] = part.value; });
-        return p2.day + "/" + p2.month + "/" + p2.year + " - " + p2.hour + ":" + p2.minute;
-      }
-      return fmt2.format(date);
-    } catch (_err2) {
-      return date.toLocaleString();
-    }
-  }
-}
-
 function repeat(char, n) {
   var s = "";
   for (var i = 0; i < n; i++) s += char;
   return s;
 }
 
-function divider() {
-  return repeat("-", LINE_WIDTH);
-}
-
-function dashedDivider() {
-  var s = "";
-  for (var i = 0; i < LINE_WIDTH; i++) s += (i % 2 === 0 ? "-" : " ");
-  return s;
-}
-
-function center(text) {
-  var t = String(text || "");
-  if (t.length >= LINE_WIDTH) return t;
-  var left = Math.floor((LINE_WIDTH - t.length) / 2);
-  return repeat(" ", left) + t;
+function padRight(str, width) {
+  str = String(str || "");
+  if (str.length >= width) return str.slice(0, width);
+  return str + repeat(" ", width - str.length);
 }
 
 function rightAlign(label, value) {
@@ -126,6 +67,32 @@ function rightAlign(label, value) {
   var spaces = LINE_WIDTH - l.length - v.length;
   if (spaces < 1) spaces = 1;
   return l + repeat(" ", spaces) + v;
+}
+
+function normalizeServiceMode(serviceMode) {
+  if (serviceMode === "delivery") return "LIVRAISON";
+  if (serviceMode === "pickup")   return "A EMPORTER";
+  if (serviceMode === "dine_in")  return "SUR PLACE";
+  return "NON DEFINI";
+}
+
+function formatDate(dateValue) {
+  var date = new Date(dateValue);
+  try {
+    var fmt = new Intl.DateTimeFormat("fr-FR", {
+      timeZone: TIMEZONE,
+      year: "numeric", month: "2-digit", day: "2-digit",
+      hour: "2-digit", minute: "2-digit", hour12: false,
+    });
+    if (fmt.formatToParts) {
+      var p = {};
+      fmt.formatToParts(date).forEach(function (part) { p[part.type] = part.value; });
+      return p.year + "-" + p.month + "-" + p.day + " " + p.hour + ":" + p.minute;
+    }
+    return fmt.format(date);
+  } catch (_e) {
+    return date.toLocaleString();
+  }
 }
 
 function parseItems(itemsRaw) {
@@ -141,38 +108,100 @@ function parseItems(itemsRaw) {
   });
 }
 
+// ─── ESC/POS Builder ──────────────────────────────────────────────────────────
+//
+// Sends raw ESC/POS bytes directly — no Windows GDI, no margins, no page headers.
+// Paper length = exactly the content. Ends with a partial cut.
+
+function EscPos() {
+  var bytes = [];
+
+  var self = {
+    // Printer init
+    init: function () { return self._push(0x1B, 0x40); },
+
+    // Code page PC850 — covers French characters (é, à, ê, ç, etc.)
+    codePage: function () { return self._push(0x1B, 0x74, 0x02); },
+
+    // Alignment
+    left:   function () { return self._push(0x1B, 0x61, 0x00); },
+    center: function () { return self._push(0x1B, 0x61, 0x01); },
+    right:  function () { return self._push(0x1B, 0x61, 0x02); },
+
+    // Text style  (ESC ! n  — bits: 0x08=bold, 0x10=dbl-height, 0x20=dbl-width)
+    normal:    function () { return self._push(0x1B, 0x21, 0x00); },
+    bold:      function () { return self._push(0x1B, 0x21, 0x08); },
+    bigBold:   function () { return self._push(0x1B, 0x21, 0x38); }, // bold + dbl-height + dbl-width
+
+    // Print text encoded as latin1 (matches PC850 for French)
+    text: function (str) {
+      var buf = Buffer.from(String(str || ""), "latin1");
+      for (var i = 0; i < buf.length; i++) bytes.push(buf[i]);
+      return self;
+    },
+
+    // Print a line (text + LF)
+    line: function (str) { return self.text(str)._push(0x0A); },
+
+    // Full-width divider
+    divider: function () { return self.line(repeat("-", LINE_WIDTH)); },
+
+    // Feed n lines then partial cut — this is what ends each ticket
+    feedAndCut: function () {
+      self._push(0x1B, 0x64, 5); // feed 5 lines
+      self._push(0x1D, 0x56, 0x01); // partial cut
+      return self;
+    },
+
+    _push: function () {
+      for (var i = 0; i < arguments.length; i++) bytes.push(arguments[i]);
+      return self;
+    },
+
+    toBuffer: function () { return Buffer.from(bytes); },
+  };
+
+  return self;
+}
+
+// ─── Ticket Builders ──────────────────────────────────────────────────────────
+
 function buildKitchenTicket(order) {
   var orderMeta = order.order_meta || {};
   var mode = normalizeServiceMode(orderMeta.serviceMode);
   var items = parseItems(order.items);
+  var p = EscPos();
 
-  var lines = [
-    dashedDivider(),
-    center("KITCHEN TICKET"),
-    center("Commande #" + order.id),
-    dashedDivider(),
-    center(mode),
-    dashedDivider(),
-  ];
+  p.init().codePage();
 
+  // Header
+  p.center().bigBold().line("KITCHEN TICKET").normal();
+  p.center().line("Commande #" + order.id);
+  p.divider();
+  p.center().bold().line(mode).normal();
+  p.divider();
+
+  // Items
+  p.left();
   items.forEach(function (item) {
-    lines.push(item.quantity + " x " + item.name);
+    p.bold().line(item.quantity + " x " + item.name).normal();
     item.options.forEach(function (opt) {
       opt = opt || {};
       var extra = Number(safeGet(opt, "extraPrice", 0));
       var extraText = extra > 0 ? " (+" + money(extra) + " MAD)" : "";
-      lines.push("  + " + String(safeGet(opt, "name", "")) + extraText);
+      p.line("  + " + String(safeGet(opt, "name", "")) + extraText);
     });
   });
 
-  lines.push(
-    dashedDivider(),
-    "Client : " + order.customer_name,
-    "Tel    : " + order.customer_phone,
-    formatDate(order.created_at),
-    "", "", "", ""
-  );
-  return lines.join("\r\n");
+  // Footer
+  p.divider();
+  p.line("Client : " + order.customer_name);
+  p.line("Tel    : " + order.customer_phone);
+  p.line(formatDate(order.created_at));
+
+  p.feedAndCut();
+
+  return p.toBuffer();
 }
 
 function buildReceiptTicket(order) {
@@ -182,109 +211,145 @@ function buildReceiptTicket(order) {
   var subtotal = Number(safeGet(orderMeta, "subtotal", 0));
   var deliveryFee = Number(safeGet(orderMeta, "deliveryFee", 0));
   var total = Number(order.total || 0);
+  var p = EscPos();
 
-  var lines = [
-    center("FACEBURGER"),
-    center("RECU CLIENT"),
-    divider(),
-    "Commande : #" + order.id,
-    "Date     : " + formatDate(order.created_at),
-    "Client   : " + order.customer_name,
-    "Tel      : " + order.customer_phone,
-    "Service  : " + mode,
-  ];
+  p.init().codePage();
 
+  // Header
+  p.center().bigBold().line("FACEBURGER").normal();
+  p.center().line("RECU CLIENT");
+  p.divider();
+
+  // Order info
+  p.left();
+  p.line("Commande : #" + order.id);
+  p.line("Date     : " + formatDate(order.created_at));
+  p.line("Client   : " + order.customer_name);
+  p.line("Tel      : " + order.customer_phone);
+  p.line("Service  : " + mode);
   if (orderMeta.serviceMode === "delivery") {
-    lines.push("Adresse  : " + order.customer_address);
+    p.line("Adresse  : " + order.customer_address);
   }
 
-  lines.push(divider());
+  p.divider();
 
+  // Items
   items.forEach(function (item) {
-    lines.push(item.quantity + " x " + item.name);
+    p.bold().line(item.quantity + " x " + item.name).normal();
     item.options.forEach(function (opt) {
       opt = opt || {};
       var extra = Number(safeGet(opt, "extraPrice", 0));
       var extraText = extra > 0 ? " (+" + money(extra) + " MAD)" : "";
-      lines.push("  + " + String(safeGet(opt, "name", "")) + extraText);
+      p.line("  + " + String(safeGet(opt, "name", "")) + extraText);
     });
-    lines.push(rightAlign("", money(item.lineTotal) + " MAD"));
-    lines.push("");
+    // Price right-aligned on its own line
+    var priceStr = money(item.lineTotal) + " MAD";
+    p.right().line(priceStr).left();
+    p._push(0x0A); // blank line between items
   });
 
-  lines.push(divider());
-  lines.push(rightAlign("Sous-total :", money(subtotal) + " MAD"));
+  // Totals
+  p.divider();
+  p.line(rightAlign("Sous-total :", money(subtotal) + " MAD"));
   if (deliveryFee > 0) {
-    lines.push(rightAlign("Livraison  :", money(deliveryFee) + " MAD"));
+    p.line(rightAlign("Livraison  :", money(deliveryFee) + " MAD"));
   }
-  lines.push(rightAlign("TOTAL TTC  :", money(total) + " MAD"));
-  lines.push(divider());
-  lines.push(center("Merci de votre visite !"));
-  lines.push("", "", "", "");
-  return lines.join("\r\n");
+  p.bold().line(rightAlign("TOTAL      :", money(total) + " MAD")).normal();
+  p.divider();
+
+  // Footer
+  p.center().line("Merci et a bientot !").left();
+
+  p.feedAndCut();
+
+  return p.toBuffer();
 }
 
-function runPowerShell(command) {
-  return new Promise(function (resolve, reject) {
-    var child = spawn(
-      "powershell.exe",
-      ["-NoProfile", "-NonInteractive", "-Command", command],
-      { stdio: ["ignore", "pipe", "pipe"] }
-    );
+// ─── Raw Printing via Win32 winspool.drv ──────────────────────────────────────
+//
+// Sends ESC/POS bytes to the printer in RAW mode — bypasses the Windows GDI
+// pipeline entirely. No margins, no page headers, no A4 padding.
 
-    var stderr = "";
-    var stdout = "";
-    child.stderr.on("data", function (chunk) { stderr += chunk.toString(); });
-    child.stdout.on("data", function (chunk) { stdout += chunk.toString(); });
+var PS_RAW_PRINT_TYPE = [
+  'Add-Type -Language CSharp -TypeDefinition @"',
+  'using System;',
+  'using System.Runtime.InteropServices;',
+  'public class WinRawPrint {',
+  '    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]',
+  '    public struct DOCINFO {',
+  '        [MarshalAs(UnmanagedType.LPWStr)] public string pDocName;',
+  '        [MarshalAs(UnmanagedType.LPWStr)] public string pOutputFile;',
+  '        [MarshalAs(UnmanagedType.LPWStr)] public string pDataType;',
+  '    }',
+  '    [DllImport("winspool.drv", CharSet=CharSet.Unicode, SetLastError=true)]',
+  '    public static extern bool OpenPrinter(string n, out IntPtr h, IntPtr d);',
+  '    [DllImport("winspool.drv", CharSet=CharSet.Unicode, SetLastError=true)]',
+  '    public static extern bool ClosePrinter(IntPtr h);',
+  '    [DllImport("winspool.drv", CharSet=CharSet.Unicode, SetLastError=true)]',
+  '    public static extern bool StartDocPrinter(IntPtr h, int level, ref DOCINFO di);',
+  '    [DllImport("winspool.drv", CharSet=CharSet.Unicode, SetLastError=true)]',
+  '    public static extern bool EndDocPrinter(IntPtr h);',
+  '    [DllImport("winspool.drv", CharSet=CharSet.Unicode, SetLastError=true)]',
+  '    public static extern bool StartPagePrinter(IntPtr h);',
+  '    [DllImport("winspool.drv", CharSet=CharSet.Unicode, SetLastError=true)]',
+  '    public static extern bool EndPagePrinter(IntPtr h);',
+  '    [DllImport("winspool.drv", CharSet=CharSet.Unicode, SetLastError=true)]',
+  '    public static extern bool WritePrinter(IntPtr h, IntPtr p, int c, out int w);',
+  '    public static bool Send(string printerName, byte[] data) {',
+  '        IntPtr hPrinter;',
+  '        if (!OpenPrinter(printerName, out hPrinter, IntPtr.Zero)) return false;',
+  '        var di = new DOCINFO { pDocName = "FaceBurger", pDataType = "RAW" };',
+  '        if (!StartDocPrinter(hPrinter, 1, ref di)) { ClosePrinter(hPrinter); return false; }',
+  '        if (!StartPagePrinter(hPrinter)) { EndDocPrinter(hPrinter); ClosePrinter(hPrinter); return false; }',
+  '        IntPtr ptr = Marshal.AllocCoTaskMem(data.Length);',
+  '        Marshal.Copy(data, 0, ptr, data.Length);',
+  '        int written = 0;',
+  '        bool ok = WritePrinter(hPrinter, ptr, data.Length, out written);',
+  '        Marshal.FreeCoTaskMem(ptr);',
+  '        EndPagePrinter(hPrinter);',
+  '        EndDocPrinter(hPrinter);',
+  '        ClosePrinter(hPrinter);',
+  '        return ok;',
+  '    }',
+  '}',
+  '"@',
+].join("\n");
+
+async function sendRawESCPOS(buffer, label) {
+  var base64 = buffer.toString("base64");
+  var escapedPrinter = PRINTER_NAME.replace(/'/g, "''");
+
+  var script = [
+    PS_RAW_PRINT_TYPE,
+    '$data = [System.Convert]::FromBase64String("' + base64 + '")',
+    '$ok = [WinRawPrint]::Send(\'' + escapedPrinter + '\', $data)',
+    'if (-not $ok) { Write-Error "SendRaw failed for ' + label + '"; exit 1 }',
+  ].join("\n");
+
+  var scriptPath = path.join(os.tmpdir(), "faceburger-" + label + "-" + Date.now() + ".ps1");
+  await fs.writeFile(scriptPath, script, "utf8");
+
+  return new Promise(function (resolve, reject) {
+    var child = spawn("powershell.exe", [
+      "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass",
+      "-File", scriptPath,
+    ], { stdio: ["ignore", "pipe", "pipe"] });
+
+    var out = "";
+    child.stdout.on("data", function (c) { out += c.toString(); });
+    child.stderr.on("data", function (c) { out += c.toString(); });
 
     child.on("close", function (code) {
+      fs.unlink(scriptPath).catch(function () {});
       if (code === 0) resolve();
-      else reject(new Error((stderr + stdout).trim() || "PowerShell exited with code " + code));
+      else reject(new Error(out.trim() || "PowerShell exited with code " + code));
     });
 
     child.on("error", reject);
   });
 }
 
-function runCmdPrint(filePath) {
-  return new Promise(function (resolve, reject) {
-    var safePrinter = PRINTER_NAME.replace(/"/g, "");
-    var safePath = filePath.replace(/"/g, "");
-    var cmdline = 'cmd /c print /D:"' + safePrinter + '" "' + safePath + '"';
-    exec(cmdline, { windowsHide: true, timeout: 60000 }, function (err, stdout, stderr) {
-      var out = ((stderr || "") + (stdout || "")).trim();
-      if (err) {
-        reject(new Error(out || (err && err.message) || String(err)));
-        return;
-      }
-      resolve();
-    });
-  });
-}
-
-async function sendToPrinter(content, label) {
-  var filename =
-    "faceburger-" + label + "-" + Date.now() + "-" + Math.random().toString(16).slice(2) + ".txt";
-  var filePath = path.join(os.tmpdir(), filename);
-  await fs.writeFile(filePath, content, "utf8");
-
-  var escapedPath = filePath.replace(/'/g, "''");
-  var escapedPrinter = PRINTER_NAME.replace(/'/g, "''");
-  var psCommand =
-    "[System.IO.File]::ReadAllText('" + escapedPath + "') | Out-Printer -Name '" + escapedPrinter + "'";
-
-  try {
-    try {
-      await runPowerShell(psCommand);
-    } catch (psErr) {
-      var msg = psErr && psErr.message ? psErr.message : String(psErr);
-      console.error("[printer-listener] Out-Printer failed, trying PRINT.EXE:", msg);
-      await runCmdPrint(filePath);
-    }
-  } finally {
-    try { await fs.unlink(filePath); } catch (_err) {}
-  }
-}
+// ─── Database ─────────────────────────────────────────────────────────────────
 
 async function ensurePrintedAtColumn() {
   await pool.query("ALTER TABLE orders ADD COLUMN IF NOT EXISTS printed_at timestamp null");
@@ -311,20 +376,27 @@ function normalizeOrderRow(order) {
   return order;
 }
 
+// ─── Order Processing ─────────────────────────────────────────────────────────
+
 async function processOrder(order) {
   order = normalizeOrderRow(order);
   console.log("[printer-listener] Printing order #" + order.id + "...");
+
   var kitchen = buildKitchenTicket(order);
   var receipt = buildReceiptTicket(order);
 
-  await sendToPrinter(kitchen, "kitchen-" + order.id);
-  await wait(350);
-  await sendToPrinter(receipt, "receipt-" + order.id);
+  await sendRawESCPOS(kitchen, "kitchen-" + order.id);
+  await wait(500);
+  await sendRawESCPOS(receipt, "receipt-" + order.id);
+
   await markPrinted(order.id);
   console.log("[printer-listener] Printed order #" + order.id + " successfully.");
 }
 
+// ─── Polling Loop ─────────────────────────────────────────────────────────────
+
 var busy = false;
+
 async function tick() {
   if (busy) return;
   busy = true;
@@ -333,16 +405,18 @@ async function tick() {
     if (orders.length > 0) {
       console.log("[printer-listener] Found " + orders.length + " pending order(s).");
     }
-    for (var i = 0; i < orders.length; i += 1) {
-      var order = orders[i];
+    for (var i = 0; i < orders.length; i++) {
       try {
-        await processOrder(order);
-      } catch (error) {
-        console.error("[printer-listener] Failed to print order #" + order.id + ":", error && error.message ? error.message : error);
+        await processOrder(orders[i]);
+      } catch (err) {
+        console.error(
+          "[printer-listener] Failed to print order #" + orders[i].id + ":",
+          err && err.message ? err.message : err
+        );
       }
     }
-  } catch (error) {
-    console.error("[printer-listener] Polling error:", error && error.message ? error.message : error);
+  } catch (err) {
+    console.error("[printer-listener] Polling error:", err && err.message ? err.message : err);
   } finally {
     busy = false;
   }
@@ -351,15 +425,14 @@ async function tick() {
 async function main() {
   await ensurePrintedAtColumn();
   console.log("[printer-listener] Started.");
-  console.log("[printer-listener] Printer: " + PRINTER_NAME);
-  console.log("[printer-listener] Poll interval: " + POLL_MS + "ms");
-  console.log("[printer-listener] Line width: " + LINE_WIDTH + " chars");
-
+  console.log("[printer-listener] Printer   : " + PRINTER_NAME);
+  console.log("[printer-listener] Poll      : " + POLL_MS + "ms");
+  console.log("[printer-listener] LineWidth : " + LINE_WIDTH + " chars");
   await tick();
   setInterval(tick, POLL_MS);
 }
 
-main().catch(function (error) {
-  console.error("[printer-listener] Fatal error:", error);
+main().catch(function (err) {
+  console.error("[printer-listener] Fatal:", err);
   process.exit(1);
 });
