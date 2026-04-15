@@ -134,24 +134,25 @@ export function CategoryTabs({ categories, locale }: Props) {
       ref={stickyRef}
       className="sticky top-0 z-40 bg-[#F0F2F5] dark:bg-[#1e1f20] isolate"
     >
-      <div className="flex items-center py-3 pl-4 pr-0">
-        {/* All cards scrollable */}
-        <div
-          ref={scrollRef}
-          className="no-scrollbar min-h-0 flex-1"
-          style={{
-            overflowX: "auto",
-            overflowY: "hidden",
-            paddingRight: 16,
-          }}
-        >
+      <div className="mx-auto w-full max-w-[480px] px-4 py-3 lg:max-w-[1200px]">
+        <div className="flex items-center">
+          {/* All cards scrollable */}
           <div
-            className="flex w-max items-center px-2 py-2"
-            style={{ gap: GAP }}
+            ref={scrollRef}
+            className="no-scrollbar min-h-0 flex-1"
+            style={{
+              overflowX: "auto",
+              overflowY: "hidden",
+            }}
           >
-            {categories.map((cat) => (
-              <CategoryCard key={cat.id} cat={cat} />
-            ))}
+            <div
+              className="flex w-max items-center px-2 py-2"
+              style={{ gap: GAP }}
+            >
+              {categories.map((cat) => (
+                <CategoryCard key={cat.id} cat={cat} />
+              ))}
+            </div>
           </div>
         </div>
       </div>
