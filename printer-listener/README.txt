@@ -3,12 +3,10 @@ Faceburger Printer Listener (Windows)
 
 Purpose
 -------
-This standalone app polls Neon orders and prints 2 separate tickets
-for each new order on the same printer:
-1) Kitchen ticket
-2) Customer receipt
+This standalone app polls Neon orders and prints customer receipts
+for each new order using ESC/POS thermal printer commands.
 
-Only after both print successfully, the order is marked as printed.
+Only after printing successfully, the order is marked as printed.
 
 
 Setup (restaurant PC)
@@ -27,10 +25,11 @@ Setup (restaurant PC)
 
 Notes
 -----
-- Printing: tries PowerShell ReadAllText + Out-Printer first; if that fails (e.g. PowerShell 2
-  without Out-Printer), falls back to Windows PRINT.EXE.
+- Printing: Uses ESC/POS commands via escpos npm package for reliable thermal printing
+- No margins, no page headers, no excessive blank space - paper length = exact receipt size
+- Uses CP850 encoding for proper French character support (é, à, ê, ç, etc.)
 - stop.bat uses Get-WmiObject (works on Windows 7 / PowerShell 2). Do not use Get-CimInstance there.
-- Requires Windows PowerShell and a working local printer setup.
+- Requires Node.js and a working local printer setup.
 - This app prints only orders where printed_at is NULL.
 - If printing fails, printed_at remains NULL and will retry.
 

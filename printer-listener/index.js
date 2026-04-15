@@ -1,10 +1,8 @@
 require("dotenv").config();
 
-var fs = require("fs").promises;
-var os = require("os");
-var path = require("path");
-var spawn = require("child_process").spawn;
 var Pool = require("pg").Pool;
+var escpos = require("escpos");
+escpos.Windows = require("escpos-windows");
 
 var DATABASE_URL = process.env.DATABASE_URL;
 var PRINTER_NAME = process.env.PRINTER_NAME;
@@ -55,12 +53,6 @@ function repeat(char, n) {
   return s;
 }
 
-function padRight(str, width) {
-  str = String(str || "");
-  if (str.length >= width) return str.slice(0, width);
-  return str + repeat(" ", width - str.length);
-}
-
 function rightAlign(label, value) {
   var l = String(label || "");
   var v = String(value || "");
@@ -108,244 +100,113 @@ function parseItems(itemsRaw) {
   });
 }
 
-// ─── ESC/POS Builder ──────────────────────────────────────────────────────────
-//
-// Sends raw ESC/POS bytes directly — no Windows GDI, no margins, no page headers.
-// Paper length = exactly the content. Ends with a partial cut.
+// ─── Receipt Builder ──────────────────────────────────────────────────────────
 
-function EscPos() {
-  var bytes = [];
-
-  var self = {
-    // Printer init
-    init: function () { return self._push(0x1B, 0x40); },
-
-    // Code page PC850 — covers French characters (é, à, ê, ç, etc.)
-    codePage: function () { return self._push(0x1B, 0x74, 0x02); },
-
-    // Alignment
-    left:   function () { return self._push(0x1B, 0x61, 0x00); },
-    center: function () { return self._push(0x1B, 0x61, 0x01); },
-    right:  function () { return self._push(0x1B, 0x61, 0x02); },
-
-    // Text style  (ESC ! n  — bits: 0x08=bold, 0x10=dbl-height, 0x20=dbl-width)
-    normal:    function () { return self._push(0x1B, 0x21, 0x00); },
-    bold:      function () { return self._push(0x1B, 0x21, 0x08); },
-    bigBold:   function () { return self._push(0x1B, 0x21, 0x38); }, // bold + dbl-height + dbl-width
-
-    // Print text encoded as latin1 (matches PC850 for French)
-    text: function (str) {
-      var buf = Buffer.from(String(str || ""), "latin1");
-      for (var i = 0; i < buf.length; i++) bytes.push(buf[i]);
-      return self;
-    },
-
-    // Print a line (text + LF)
-    line: function (str) { return self.text(str)._push(0x0A); },
-
-    // Full-width divider
-    divider: function () { return self.line(repeat("-", LINE_WIDTH)); },
-
-    // Feed n lines then partial cut — this is what ends each ticket
-    feedAndCut: function () {
-      self._push(0x1B, 0x64, 5); // feed 5 lines
-      self._push(0x1D, 0x56, 0x01); // partial cut
-      return self;
-    },
-
-    _push: function () {
-      for (var i = 0; i < arguments.length; i++) bytes.push(arguments[i]);
-      return self;
-    },
-
-    toBuffer: function () { return Buffer.from(bytes); },
-  };
-
-  return self;
-}
-
-// ─── Ticket Builders ──────────────────────────────────────────────────────────
-
-function buildKitchenTicket(order) {
-  var orderMeta = order.order_meta || {};
-  var mode = normalizeServiceMode(orderMeta.serviceMode);
-  var items = parseItems(order.items);
-  var p = EscPos();
-
-  p.init().codePage();
-
-  // Header
-  p.center().bigBold().line("KITCHEN TICKET").normal();
-  p.center().line("Commande #" + order.id);
-  p.divider();
-  p.center().bold().line(mode).normal();
-  p.divider();
-
-  // Items
-  p.left();
-  items.forEach(function (item) {
-    p.bold().line(item.quantity + " x " + item.name).normal();
-    item.options.forEach(function (opt) {
-      opt = opt || {};
-      var extra = Number(safeGet(opt, "extraPrice", 0));
-      var extraText = extra > 0 ? " (+" + money(extra) + " MAD)" : "";
-      p.line("  + " + String(safeGet(opt, "name", "")) + extraText);
-    });
-  });
-
-  // Footer
-  p.divider();
-  p.line("Client : " + order.customer_name);
-  p.line("Tel    : " + order.customer_phone);
-  p.line(formatDate(order.created_at));
-
-  p.feedAndCut();
-
-  return p.toBuffer();
-}
-
-function buildReceiptTicket(order) {
+function buildReceipt(printer, order) {
   var orderMeta = order.order_meta || {};
   var mode = normalizeServiceMode(orderMeta.serviceMode);
   var items = parseItems(order.items);
   var subtotal = Number(safeGet(orderMeta, "subtotal", 0));
   var deliveryFee = Number(safeGet(orderMeta, "deliveryFee", 0));
   var total = Number(order.total || 0);
-  var p = EscPos();
-
-  p.init().codePage();
 
   // Header
-  p.center().bigBold().line("FACEBURGER").normal();
-  p.center().line("RECU CLIENT");
-  p.divider();
+  printer
+    .font("a")
+    .align("ct")
+    .style("bu")
+    .size(2, 2)
+    .text("FACEBURGER")
+    .size(1, 1)
+    .style("normal")
+    .text("RECU CLIENT")
+    .text(repeat("-", LINE_WIDTH));
 
   // Order info
-  p.left();
-  p.line("Commande : #" + order.id);
-  p.line("Date     : " + formatDate(order.created_at));
-  p.line("Client   : " + order.customer_name);
-  p.line("Tel      : " + order.customer_phone);
-  p.line("Service  : " + mode);
+  printer
+    .align("lt")
+    .text("Commande : #" + order.id)
+    .text("Date     : " + formatDate(order.created_at))
+    .text("Client   : " + order.customer_name)
+    .text("Tel      : " + order.customer_phone)
+    .text("Service  : " + mode);
+
   if (orderMeta.serviceMode === "delivery") {
-    p.line("Adresse  : " + order.customer_address);
+    printer.text("Adresse  : " + order.customer_address);
   }
 
-  p.divider();
+  printer.text(repeat("-", LINE_WIDTH));
 
   // Items
   items.forEach(function (item) {
-    p.bold().line(item.quantity + " x " + item.name).normal();
+    printer
+      .style("b")
+      .text(item.quantity + " x " + item.name)
+      .style("normal");
+    
     item.options.forEach(function (opt) {
       opt = opt || {};
       var extra = Number(safeGet(opt, "extraPrice", 0));
       var extraText = extra > 0 ? " (+" + money(extra) + " MAD)" : "";
-      p.line("  + " + String(safeGet(opt, "name", "")) + extraText);
+      printer.text("  + " + String(safeGet(opt, "name", "")) + extraText);
     });
-    // Price right-aligned on its own line
+    
+    // Price aligned to the right
     var priceStr = money(item.lineTotal) + " MAD";
-    p.right().line(priceStr).left();
-    p._push(0x0A); // blank line between items
+    printer.align("rt").text(priceStr).align("lt");
+    printer.text(""); // blank line
   });
 
   // Totals
-  p.divider();
-  p.line(rightAlign("Sous-total :", money(subtotal) + " MAD"));
+  printer
+    .text(repeat("-", LINE_WIDTH))
+    .text(rightAlign("Sous-total :", money(subtotal) + " MAD"));
+
   if (deliveryFee > 0) {
-    p.line(rightAlign("Livraison  :", money(deliveryFee) + " MAD"));
+    printer.text(rightAlign("Livraison  :", money(deliveryFee) + " MAD"));
   }
-  p.bold().line(rightAlign("TOTAL      :", money(total) + " MAD")).normal();
-  p.divider();
+
+  printer
+    .style("b")
+    .text(rightAlign("TOTAL      :", money(total) + " MAD"))
+    .style("normal")
+    .text(repeat("-", LINE_WIDTH));
 
   // Footer
-  p.center().line("Merci et a bientot !").left();
+  printer
+    .align("ct")
+    .text("Merci et a bientot !")
+    .feed(3)
+    .cut();
 
-  p.feedAndCut();
-
-  return p.toBuffer();
+  return printer;
 }
 
-// ─── Raw Printing via Win32 winspool.drv ──────────────────────────────────────
-//
-// Sends ESC/POS bytes to the printer in RAW mode — bypasses the Windows GDI
-// pipeline entirely. No margins, no page headers, no A4 padding.
+// ─── Print Function ───────────────────────────────────────────────────────────
 
-var PS_RAW_PRINT_TYPE = [
-  'Add-Type -Language CSharp -TypeDefinition @"',
-  'using System;',
-  'using System.Runtime.InteropServices;',
-  'public class WinRawPrint {',
-  '    [StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]',
-  '    public struct DOCINFO {',
-  '        [MarshalAs(UnmanagedType.LPWStr)] public string pDocName;',
-  '        [MarshalAs(UnmanagedType.LPWStr)] public string pOutputFile;',
-  '        [MarshalAs(UnmanagedType.LPWStr)] public string pDataType;',
-  '    }',
-  '    [DllImport("winspool.drv", CharSet=CharSet.Unicode, SetLastError=true)]',
-  '    public static extern bool OpenPrinter(string n, out IntPtr h, IntPtr d);',
-  '    [DllImport("winspool.drv", CharSet=CharSet.Unicode, SetLastError=true)]',
-  '    public static extern bool ClosePrinter(IntPtr h);',
-  '    [DllImport("winspool.drv", CharSet=CharSet.Unicode, SetLastError=true)]',
-  '    public static extern bool StartDocPrinter(IntPtr h, int level, ref DOCINFO di);',
-  '    [DllImport("winspool.drv", CharSet=CharSet.Unicode, SetLastError=true)]',
-  '    public static extern bool EndDocPrinter(IntPtr h);',
-  '    [DllImport("winspool.drv", CharSet=CharSet.Unicode, SetLastError=true)]',
-  '    public static extern bool StartPagePrinter(IntPtr h);',
-  '    [DllImport("winspool.drv", CharSet=CharSet.Unicode, SetLastError=true)]',
-  '    public static extern bool EndPagePrinter(IntPtr h);',
-  '    [DllImport("winspool.drv", CharSet=CharSet.Unicode, SetLastError=true)]',
-  '    public static extern bool WritePrinter(IntPtr h, IntPtr p, int c, out int w);',
-  '    public static bool Send(string printerName, byte[] data) {',
-  '        IntPtr hPrinter;',
-  '        if (!OpenPrinter(printerName, out hPrinter, IntPtr.Zero)) return false;',
-  '        var di = new DOCINFO { pDocName = "FaceBurger", pDataType = "RAW" };',
-  '        if (!StartDocPrinter(hPrinter, 1, ref di)) { ClosePrinter(hPrinter); return false; }',
-  '        if (!StartPagePrinter(hPrinter)) { EndDocPrinter(hPrinter); ClosePrinter(hPrinter); return false; }',
-  '        IntPtr ptr = Marshal.AllocCoTaskMem(data.Length);',
-  '        Marshal.Copy(data, 0, ptr, data.Length);',
-  '        int written = 0;',
-  '        bool ok = WritePrinter(hPrinter, ptr, data.Length, out written);',
-  '        Marshal.FreeCoTaskMem(ptr);',
-  '        EndPagePrinter(hPrinter);',
-  '        EndDocPrinter(hPrinter);',
-  '        ClosePrinter(hPrinter);',
-  '        return ok;',
-  '    }',
-  '}',
-  '"@',
-].join("\n");
-
-async function sendRawESCPOS(buffer, label) {
-  var base64 = buffer.toString("base64");
-  var escapedPrinter = PRINTER_NAME.replace(/'/g, "''");
-
-  var script = [
-    PS_RAW_PRINT_TYPE,
-    '$data = [System.Convert]::FromBase64String("' + base64 + '")',
-    '$ok = [WinRawPrint]::Send(\'' + escapedPrinter + '\', $data)',
-    'if (-not $ok) { Write-Error "SendRaw failed for ' + label + '"; exit 1 }',
-  ].join("\n");
-
-  var scriptPath = path.join(os.tmpdir(), "faceburger-" + label + "-" + Date.now() + ".ps1");
-  await fs.writeFile(scriptPath, script, "utf8");
-
+function printReceipt(order) {
   return new Promise(function (resolve, reject) {
-    var child = spawn("powershell.exe", [
-      "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass",
-      "-File", scriptPath,
-    ], { stdio: ["ignore", "pipe", "pipe"] });
+    try {
+      var device = new escpos.Windows(PRINTER_NAME);
+      var printer = new escpos.Printer(device, { encoding: "CP850" });
 
-    var out = "";
-    child.stdout.on("data", function (c) { out += c.toString(); });
-    child.stderr.on("data", function (c) { out += c.toString(); });
+      device.open(function (err) {
+        if (err) {
+          return reject(err);
+        }
 
-    child.on("close", function (code) {
-      fs.unlink(scriptPath).catch(function () {});
-      if (code === 0) resolve();
-      else reject(new Error(out.trim() || "PowerShell exited with code " + code));
-    });
-
-    child.on("error", reject);
+        try {
+          buildReceipt(printer, order);
+          device.close();
+          resolve();
+        } catch (printErr) {
+          device.close();
+          reject(printErr);
+        }
+      });
+    } catch (err) {
+      reject(err);
+    }
   });
 }
 
@@ -382,14 +243,9 @@ async function processOrder(order) {
   order = normalizeOrderRow(order);
   console.log("[printer-listener] Printing order #" + order.id + "...");
 
-  var kitchen = buildKitchenTicket(order);
-  var receipt = buildReceiptTicket(order);
-
-  await sendRawESCPOS(kitchen, "kitchen-" + order.id);
-  await wait(500);
-  await sendRawESCPOS(receipt, "receipt-" + order.id);
-
+  await printReceipt(order);
   await markPrinted(order.id);
+  
   console.log("[printer-listener] Printed order #" + order.id + " successfully.");
 }
 
