@@ -6,7 +6,7 @@ import { Trash2, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { useMediaQuery } from "@/lib/use-media-query";
-import { useCartStore, entryTotal } from "@/store/cart";
+import { useCartStore, entryTotal, getOptionExtraPrice } from "@/store/cart";
 
 type Props = {
   isOpen: boolean;
@@ -177,19 +177,22 @@ export function CartSheet({ isOpen, locale, onClose }: Props) {
 
                             {entry.chosenOptions.length > 0 && (
                               <ul className="mt-1 space-y-0.5">
-                                {entry.chosenOptions.map((o) => (
+                                {entry.chosenOptions.map((o) => {
+                                  const optionExtraPrice = getOptionExtraPrice(entry, o.optionId);
+                                  return (
                                   <li
                                     key={o.optionId}
                                     className="text-[12px] leading-snug text-[#71717a] dark:text-[#a1a1aa]"
                                   >
                                     {o.optionName[loc] ?? o.optionName.fr}
-                                    {o.extraPrice > 0 && (
+                                    {optionExtraPrice > 0 && (
                                       <span className="text-[#1877F2]">
-                                        {" "}(+{o.extraPrice.toFixed(2)} {t("cart.currency")})
+                                        {" "}(+{optionExtraPrice.toFixed(2)} {t("cart.currency")})
                                       </span>
                                     )}
                                   </li>
-                                ))}
+                                  );
+                                })}
                               </ul>
                             )}
                           </div>

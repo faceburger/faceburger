@@ -3,11 +3,16 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
-import { useCartStore, entryTotal } from "@/store/cart";
+import { useCartStore, entryTotal, getOptionExtraPrice } from "@/store/cart";
 import { createOrder } from "@/actions/orders";
 import { CheckoutHero } from "./CheckoutHero";
 import { StepProgress } from "./StepProgress";
 import { DEFAULT_DELIVERY_FEE_MAD } from "@/lib/checkout-constants";
+import {
+  DEFAULT_ORDERING_WINDOW,
+  formatWindowLabel,
+  isWithinOrderingWindow,
+} from "@/lib/ordering-hours";
 
 const COUNTRY_OPTIONS = [
   { code: "+212", flag: "🇲🇦", label: "MA" },
@@ -98,6 +103,7 @@ export function CheckoutClient({ locale, whatsappNumber, settings }: { locale: s
 
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
+  const [nowTick, setNowTick] = useState(0);
 
   const deliveryTiers: { maxKm: number; fee: number }[] = (() => {
     try {
@@ -120,6 +126,15 @@ export function CheckoutClient({ locale, whatsappNumber, settings }: { locale: s
     return matched ? matched.fee : (deliveryTiers[deliveryTiers.length - 1]?.fee ?? DEFAULT_DELIVERY_FEE_MAD);
   })();
   const grandTotal = subtotal + deliveryFee;
+
+  // keep a light tick so the “open/closed” gate can update
+  useEffect(() => {
+    const id = window.setInterval(() => setNowTick((x) => x + 1), 30_000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  const orderingWindow = DEFAULT_ORDERING_WINDOW;
+  const withinOrderingWindow = isWithinOrderingWindow(new Date(), orderingWindow).ok;
 
   useEffect(() => {
     if (entries.length === 0) {
@@ -179,6 +194,10 @@ export function CheckoutClient({ locale, whatsappNumber, settings }: { locale: s
 
   async function submitOrder() {
     if (entries.length === 0) return;
+    if (!withinOrderingWindow) {
+      setSubmitError(`Les commandes sont fermées. Horaires : ${formatWindowLabel(orderingWindow)}.`);
+      return;
+    }
     setSubmitError("");
     setSubmitting(true);
     const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
@@ -198,7 +217,7 @@ export function CheckoutClient({ locale, whatsappNumber, settings }: { locale: s
       basePrice: e.basePrice,
       options: e.chosenOptions.map((o) => ({
         name: o.optionName[loc] ?? o.optionName.fr,
-        extraPrice: o.extraPrice,
+        extraPrice: getOptionExtraPrice(e, o.optionId),
       })),
       lineTotal: entryTotal(e),
     }));
@@ -269,7 +288,8 @@ export function CheckoutClient({ locale, whatsappNumber, settings }: { locale: s
         lines.push(`${entry.quantity}x  ${name}`);
         for (const opt of entry.chosenOptions) {
           const optName = opt.optionName.fr;
-          lines.push(`   + ${optName}${opt.extraPrice > 0 ? ` (+${opt.extraPrice.toFixed(2)} MAD)` : ""}`);
+          const optionExtraPrice = getOptionExtraPrice(entry, opt.optionId);
+          lines.push(`   + ${optName}${optionExtraPrice > 0 ? ` (+${optionExtraPrice.toFixed(2)} MAD)` : ""}`);
         }
         lines.push(`   ${lineTotal} MAD`);
         lines.push("");
@@ -296,9 +316,14 @@ export function CheckoutClient({ locale, whatsappNumber, settings }: { locale: s
       else if (popup) popup.location.href = url;
       else window.location.href = url;
       router.replace("/");
-    } catch {
+    } catch (err) {
       if (popup && !popup.closed) popup.close();
-      setSubmitError("Échec de l'envoi. Réessayez dans un instant.");
+      const msg = err instanceof Error ? err.message : String(err);
+      if (msg.includes("ORDERING_CLOSED")) {
+        setSubmitError(`Les commandes sont fermées. Horaires : ${formatWindowLabel(orderingWindow)}.`);
+      } else {
+        setSubmitError("Échec de l'envoi. Réessayez dans un instant.");
+      }
     } finally {
       setSubmitting(false);
     }
@@ -681,7 +706,7 @@ export function CheckoutClient({ locale, whatsappNumber, settings }: { locale: s
               </button>
               <button
                 type="button"
-                disabled={submitting}
+                disabled={submitting || !withinOrderingWindow}
                 onClick={submitOrder}
                 className="min-h-[48px] flex-1 rounded-xl bg-[#1877F2] text-[14px] font-semibold text-white disabled:opacity-50"
               >
@@ -714,6 +739,11 @@ export function CheckoutClient({ locale, whatsappNumber, settings }: { locale: s
         {submitError && (
           <p className="mt-3 text-sm text-red-500">
             {submitError}
+          </p>
+        )}
+        {step === 4 && !withinOrderingWindow && !submitError && (
+          <p className="mt-3 text-sm text-amber-600">
+            Les commandes sont fermées. Horaires : {formatWindowLabel(orderingWindow)}.
           </p>
         )}
       </div>

@@ -6,6 +6,7 @@ import { ChevronDown, MapPin, Clock, Phone, Sun, Moon } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { useTheme } from "@/components/ThemeProvider";
+import { DEFAULT_ORDERING_WINDOW, formatWindowLabel } from "@/lib/ordering-hours";
 import { CategoryTabs } from "./CategoryTabs";
 import { ItemCard } from "./ItemCard";
 import { ItemDetailSheet } from "./ItemDetailSheet";
@@ -38,6 +39,7 @@ export function CustomerPageClient({ locale, menu, settings }: Props) {
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
   const loc = locale as "fr" | "ar" | "en";
+  const orderingHoursLabel = formatWindowLabel(DEFAULT_ORDERING_WINDOW);
 
   function getCategoryName(cat: MenuCategory) {
     return cat.name[loc] ?? cat.name.fr;
@@ -90,7 +92,10 @@ export function CustomerPageClient({ locale, menu, settings }: Props) {
 
         {/* Centered logo — brand blue */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="flex flex-col items-center">
+          <div
+            className="flex flex-col items-center"
+            style={{ transform: "translateY(14px)" }}
+          >
             <span
               style={{
                 fontWeight: 900,
@@ -122,8 +127,39 @@ export function CustomerPageClient({ locale, menu, settings }: Props) {
         {/* Maps, theme, language — aligned with main content width */}
         <div className="absolute inset-x-0 top-0 z-10">
           <div
-            className={`${contentMax} flex items-center justify-end gap-2 px-4 pt-3.5`}
+            className={`${contentMax} flex items-center justify-between gap-2 px-4 pt-3.5`}
           >
+          <div
+            className="inline-flex items-center gap-2 rounded-full px-3 py-1.5"
+            style={{
+              background: "rgba(0,0,0,0.30)",
+              border: "1px solid rgba(255,255,255,0.22)",
+              backdropFilter: "blur(10px)",
+              WebkitBackdropFilter: "blur(10px)",
+              color: "#ffffff",
+              maxWidth: "min(72vw, 320px)",
+            }}
+          >
+            <Clock size={14} style={{ color: "#ffffff" }} />
+            <span
+              className="truncate"
+              style={{
+                fontSize: 12,
+                fontWeight: 700,
+                color: "rgba(255,255,255,0.92)",
+                letterSpacing: "0.01em",
+              }}
+              title={orderingHoursLabel}
+            >
+              {loc === "ar"
+                ? `أوقات الطلب: ${orderingHoursLabel}`
+                : loc === "en"
+                  ? `Ordering: ${orderingHoursLabel}`
+                  : `Commande: ${orderingHoursLabel}`}
+            </span>
+          </div>
+
+          <div className="flex items-center justify-end gap-2">
           <button
             type="button"
             onClick={openMaps}
@@ -240,6 +276,7 @@ export function CustomerPageClient({ locale, menu, settings }: Props) {
                 </div>
               </>
             )}
+          </div>
           </div>
           </div>
         </div>

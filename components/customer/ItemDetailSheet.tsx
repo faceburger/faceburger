@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import Image from "next/image";
-import { Trash2, X } from "lucide-react";
+import { X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMediaQuery } from "@/lib/use-media-query";
 import { useCartStore } from "@/store/cart";
@@ -22,8 +22,6 @@ export function ItemDetailSheet({ item, locale, onClose }: Props) {
   const addEntry = useCartStore((s) => s.addEntry);
   const [quantity, setQuantity] = useState(1);
   const [selected, setSelected] = useState<SelectedOptions>({});
-  const sheetRef = useRef<HTMLDivElement>(null);
-  const startYRef = useRef<number | null>(null);
   const [sheetEntered, setSheetEntered] = useState(false);
 
   const loc = locale as "fr" | "ar" | "en";
@@ -134,13 +132,25 @@ export function ItemDetailSheet({ item, locale, onClose }: Props) {
     return depGroup.options.some((o) => chosenIds.includes(o.id) && o.name.fr.startsWith(cond.optionFr));
   }
 
+  function canAddToCart(): boolean {
+    if (!item) return false;
+    return item.optionGroups.every((group) => {
+      if (!isGroupVisible(group)) return true;
+      const chosenCount = (selected[group.id] ?? []).length;
+      const requiredSelections = Math.max(group.minSelect, group.required ? 1 : 0);
+      return chosenCount >= requiredSelections;
+    });
+  }
+
   function handleAdd() {
-    if (!item) return;
+    if (!item || !canAddToCart()) return;
     const chosenOptions = item.optionGroups.flatMap((g) =>
       (selected[g.id] ?? []).map((optId) => {
         const opt = g.options.find((o) => o.id === optId)!;
         return {
           optionId: opt.id,
+          groupId: g.id,
+          groupFreeSelections: g.freeSelections,
           optionName: opt.name,
           extraPrice: opt.extraPrice,
         };
@@ -157,17 +167,6 @@ export function ItemDetailSheet({ item, locale, onClose }: Props) {
       optionIds: allOptionIds,
     });
     onClose();
-  }
-
-  // Touch drag to close
-  function handleTouchStart(e: React.TouchEvent) {
-    startYRef.current = e.touches[0].clientY;
-  }
-  function handleTouchEnd(e: React.TouchEvent) {
-    if (startYRef.current === null) return;
-    const delta = e.changedTouches[0].clientY - startYRef.current;
-    if (delta > 80) onClose();
-    startYRef.current = null;
   }
 
   if (!item) return null;
@@ -210,7 +209,8 @@ export function ItemDetailSheet({ item, locale, onClose }: Props) {
     <button
       type="button"
       onClick={handleAdd}
-      className="w-full font-semibold text-white transition-opacity active:opacity-80"
+      disabled={!canAddToCart()}
+      className="w-full font-semibold text-white transition-opacity active:opacity-80 disabled:cursor-not-allowed disabled:opacity-50"
       style={{
         height: 48,
         background: "#1877F2",
@@ -332,12 +332,9 @@ export function ItemDetailSheet({ item, locale, onClose }: Props) {
         <div className="flex items-center justify-center gap-4 py-4">
           <button
             type="button"
-            onClick={() =>
-              quantity > 1
-                ? setQuantity((q) => Math.max(1, q - 1))
-                : onClose()
-            }
-            className={`flex items-center justify-center border border-[#E4E6EB] font-bold dark:border-[#3a3b3d] ${
+            onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+            disabled={quantity === 1}
+            className={`flex items-center justify-center border border-[#E4E6EB] font-bold disabled:cursor-not-allowed disabled:opacity-50 dark:border-[#3a3b3d] ${
               quantity > 1
                 ? "text-[#1C1E21] dark:text-[#E4E6EB]"
                 : "text-[#65676B] dark:text-[#B0B3B8]"
@@ -348,17 +345,9 @@ export function ItemDetailSheet({ item, locale, onClose }: Props) {
               borderRadius: "50%",
               fontSize: 20,
             }}
-            aria-label={
-              quantity > 1
-                ? t("sheet.decreaseQty")
-                : t("sheet.dismissItem")
-            }
+            aria-label={t("sheet.decreaseQty")}
           >
-            {quantity > 1 ? (
-              "−"
-            ) : (
-              <Trash2 size={16} strokeWidth={2.25} />
-            )}
+            −
           </button>
           <span
             className="text-center text-[18px] font-semibold text-[#1C1E21] dark:text-[#E4E6EB]"
@@ -395,21 +384,17 @@ export function ItemDetailSheet({ item, locale, onClose }: Props) {
           transition: "opacity 320ms ease-out",
           pointerEvents: sheetEntered ? "auto" : "none",
         }}
-        onClick={onClose}
         aria-hidden={!sheetEntered}
       />
 
       {/* Sheet — bottom sheet on mobile; centered modal on desktop */}
       <div
-        ref={sheetRef}
         className={
           isDesktop
             ? "fixed z-50 flex w-full flex-col overflow-hidden rounded-2xl bg-white shadow-2xl dark:bg-[#18181b] dark:shadow-[0_24px_80px_rgba(0,0,0,0.55)]"
             : "fixed bottom-0 left-0 right-0 z-50 w-full max-w-none overflow-hidden bg-white dark:bg-[#18181b]"
         }
         style={panelStyle}
-        onTouchStart={isDesktop ? undefined : handleTouchStart}
-        onTouchEnd={isDesktop ? undefined : handleTouchEnd}
       >
         {/* Close — same horizontal inset as menu cards (16px) */}
         <button

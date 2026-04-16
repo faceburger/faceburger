@@ -27,6 +27,9 @@ export function ItemCard({ item, locale, onOpen }: Props) {
   const hasOptions = item.optionGroups.length > 0;
   const simpleCartId = simpleLineCartId(item.id);
   const simpleEntry = entries.find((e) => e.cartId === simpleCartId);
+  const itemEntries = entries.filter((e) => e.itemId === item.id);
+  const itemQuantity = itemEntries.reduce((sum, entry) => sum + entry.quantity, 0);
+  const latestEntry = itemEntries[itemEntries.length - 1];
 
   function addSimpleToCart(e: React.MouseEvent) {
     e.stopPropagation();
@@ -40,6 +43,16 @@ export function ItemCard({ item, locale, onOpen }: Props) {
       chosenOptions: [],
       optionIds: [],
     });
+  }
+
+  function decrementConfiguredItem(e: React.MouseEvent) {
+    e.stopPropagation();
+    if (!latestEntry) return;
+    if (latestEntry.quantity > 1) {
+      setQuantity(latestEntry.cartId, latestEntry.quantity - 1);
+      return;
+    }
+    removeEntry(latestEntry.cartId);
   }
 
   return (
@@ -115,25 +128,55 @@ export function ItemCard({ item, locale, onOpen }: Props) {
           </p>
 
           {!item.available ? null : hasOptions ? (
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                onOpen(item);
-              }}
-              className="flex flex-shrink-0 items-center justify-center font-bold text-white transition-transform active:scale-90 disabled:opacity-40"
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: "50%",
-                background: "#1877F2",
-                fontSize: 24,
-                lineHeight: 1,
-                boxShadow: "0 2px 10px rgba(24,119,242,0.35)",
-              }}
-            >
-              +
-            </button>
+            itemQuantity > 0 ? (
+              <div
+                className="flex flex-shrink-0 items-center gap-1"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <button
+                  type="button"
+                  onClick={decrementConfiguredItem}
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-[#E4E6EB] bg-white text-[#65676B] dark:border-[#3e4042] dark:bg-[#2d2f31] dark:text-[#b0b3b8]"
+                  aria-label={itemQuantity > 1 ? t("sheet.decreaseQty") : t("cart.remove")}
+                >
+                  {itemQuantity > 1 ? "−" : <Trash2 size={16} strokeWidth={2.25} />}
+                </button>
+                <span className="min-w-[24px] text-center text-[15px] font-semibold text-[#1C1E21] dark:text-[#e4e6eb]">
+                  {itemQuantity}
+                </span>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onOpen(item);
+                  }}
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-[#E4E6EB] bg-white text-lg font-medium text-[#1C1E21] dark:border-[#3e4042] dark:bg-[#2d2f31] dark:text-[#e4e6eb]"
+                  aria-label={t("sheet.addToCart")}
+                >
+                  +
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onOpen(item);
+                }}
+                className="flex flex-shrink-0 items-center justify-center font-bold text-white transition-transform active:scale-90 disabled:opacity-40"
+                style={{
+                  width: 36,
+                  height: 36,
+                  borderRadius: "50%",
+                  background: "#1877F2",
+                  fontSize: 24,
+                  lineHeight: 1,
+                  boxShadow: "0 2px 10px rgba(24,119,242,0.35)",
+                }}
+              >
+                +
+              </button>
+            )
           ) : simpleEntry ? (
             <div
               className="flex flex-shrink-0 items-center gap-1"

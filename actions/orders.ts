@@ -4,6 +4,11 @@ import { db } from "@/db";
 import { orders } from "@/db/schema";
 import { desc, eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import {
+  DEFAULT_ORDERING_WINDOW,
+  isWithinOrderingWindow,
+  type OrderingWindow,
+} from "@/lib/ordering-hours";
 
 type OrderItem = {
   itemId: number;
@@ -23,7 +28,21 @@ type CreateOrderInput = {
   orderMeta?: Record<string, unknown> | null;
 };
 
+function getServerOrderingWindow(): OrderingWindow {
+  return {
+    timeZone: process.env.ORDERING_TIMEZONE || DEFAULT_ORDERING_WINDOW.timeZone,
+    start: process.env.ORDERING_START || DEFAULT_ORDERING_WINDOW.start,
+    end: process.env.ORDERING_END || DEFAULT_ORDERING_WINDOW.end,
+  };
+}
+
 export async function createOrder(input: CreateOrderInput): Promise<number> {
+  const window = getServerOrderingWindow();
+  const within = isWithinOrderingWindow(new Date(), window);
+  if (!within.ok) {
+    throw new Error("ORDERING_CLOSED");
+  }
+
   const result = await db.insert(orders).values({
     customerName: input.customerName,
     customerPhone: input.customerPhone,
