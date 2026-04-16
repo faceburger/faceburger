@@ -1,8 +1,10 @@
 require("dotenv").config();
 
+var fs = require("fs").promises;
+var os = require("os");
+var path = require("path");
+var spawn = require("child_process").spawn;
 var Pool = require("pg").Pool;
-var escpos = require("escpos");
-escpos.Windows = require("escpos-windows");
 
 var DATABASE_URL = process.env.DATABASE_URL;
 var PRINTER_NAME = process.env.PRINTER_NAME;
@@ -100,113 +102,233 @@ function parseItems(itemsRaw) {
   });
 }
 
-// ─── Receipt Builder ──────────────────────────────────────────────────────────
+// ─── ESC/POS Commands ─────────────────────────────────────────────────────────
 
-function buildReceipt(printer, order) {
+var ESC = 0x1B;
+var GS = 0x1D;
+
+function buildEscPosKitchen(order) {
+  var orderMeta = order.order_meta || {};
+  var mode = normalizeServiceMode(orderMeta.serviceMode);
+  var items = parseItems(order.items);
+  
+  var bytes = [];
+
+  // Helper to add bytes
+  function push() {
+    for (var i = 0; i < arguments.length; i++) {
+      bytes.push(arguments[i]);
+    }
+  }
+
+  // Helper to add text (latin1 encoding for French chars)
+  function text(str) {
+    var buf = Buffer.from(String(str || ""), "latin1");
+    for (var i = 0; i < buf.length; i++) {
+      bytes.push(buf[i]);
+    }
+  }
+
+  // Helper to add text + newline
+  function line(str) {
+    text(str);
+    push(0x0A);
+  }
+
+  // Initialize printer
+  push(ESC, 0x40);
+  
+  // Set code page PC850 (French characters)
+  push(ESC, 0x74, 0x02);
+
+  // Header - centered, double size, bold
+  push(ESC, 0x61, 0x01); // center align
+  push(ESC, 0x21, 0x38); // bold + double height + double width
+  line("CUISINE");
+  push(ESC, 0x21, 0x00); // normal
+  line(repeat("-", LINE_WIDTH));
+  
+  // Order type - centered, bold, bigger (same as receipt)
+  push(ESC, 0x21, 0x18); // bold + double height
+  line(mode);
+  push(ESC, 0x21, 0x00); // normal
+  line(repeat("-", LINE_WIDTH));
+
+  // Order info - left aligned
+  push(ESC, 0x61, 0x00); // left align
+  push(ESC, 0x21, 0x08); // bold
+  line("Commande : #" + order.id);
+  push(ESC, 0x21, 0x00); // normal
+  line("Date     : " + formatDate(order.created_at))
+  
+  line(repeat("-", LINE_WIDTH));
+
+  // Items - only name and quantity
+  items.forEach(function (item) {
+    push(ESC, 0x21, 0x08); // bold
+    line(item.quantity + " x " + item.name);
+    push(ESC, 0x21, 0x00); // normal
+    
+    // Show options
+    item.options.forEach(function (opt) {
+      opt = opt || {};
+      line("  + " + String(safeGet(opt, "name", "")));
+    });
+    
+    push(0x0A); // blank line between items
+  });
+
+  line(repeat("-", LINE_WIDTH));
+
+  // Feed 4 lines and partial cut
+  push(ESC, 0x64, 0x04); // feed 4 lines
+  push(GS, 0x56, 0x01);  // partial cut
+
+  return Buffer.from(bytes);
+}
+
+function buildEscPosReceipt(order) {
   var orderMeta = order.order_meta || {};
   var mode = normalizeServiceMode(orderMeta.serviceMode);
   var items = parseItems(order.items);
   var subtotal = Number(safeGet(orderMeta, "subtotal", 0));
   var deliveryFee = Number(safeGet(orderMeta, "deliveryFee", 0));
   var total = Number(order.total || 0);
+  
+  var bytes = [];
 
-  // Header
-  printer
-    .font("a")
-    .align("ct")
-    .style("bu")
-    .size(2, 2)
-    .text("FACEBURGER")
-    .size(1, 1)
-    .style("normal")
-    .text("RECU CLIENT")
-    .text(repeat("-", LINE_WIDTH));
-
-  // Order info
-  printer
-    .align("lt")
-    .text("Commande : #" + order.id)
-    .text("Date     : " + formatDate(order.created_at))
-    .text("Client   : " + order.customer_name)
-    .text("Tel      : " + order.customer_phone)
-    .text("Service  : " + mode);
-
-  if (orderMeta.serviceMode === "delivery") {
-    printer.text("Adresse  : " + order.customer_address);
+  // Helper to add bytes
+  function push() {
+    for (var i = 0; i < arguments.length; i++) {
+      bytes.push(arguments[i]);
+    }
   }
 
-  printer.text(repeat("-", LINE_WIDTH));
+  // Helper to add text (latin1 encoding for French chars)
+  function text(str) {
+    var buf = Buffer.from(String(str || ""), "latin1");
+    for (var i = 0; i < buf.length; i++) {
+      bytes.push(buf[i]);
+    }
+  }
+
+  // Helper to add text + newline
+  function line(str) {
+    text(str);
+    push(0x0A);
+  }
+
+  // Initialize printer
+  push(ESC, 0x40);
+  
+  // Set code page PC850 (French characters)
+  push(ESC, 0x74, 0x02);
+
+  // Header - centered, double size, bold
+  push(ESC, 0x61, 0x01); // center align
+  push(ESC, 0x21, 0x38); // bold + double height + double width
+  line("FACEBURGER");
+  push(ESC, 0x21, 0x00); // normal
+  line("RECU CLIENT");
+  line(repeat("-", LINE_WIDTH));
+  
+  // Order type - centered, bold, bigger
+  push(ESC, 0x21, 0x18); // bold + double height
+  line(mode);
+  push(ESC, 0x21, 0x00); // normal
+  line(repeat("-", LINE_WIDTH));
+
+  // Order info - left aligned
+  push(ESC, 0x61, 0x00); // left align
+  line("Commande : #" + order.id);
+  line("Date     : " + formatDate(order.created_at));
+  line("Client   : " + order.customer_name);
+  line("Tel      : " + order.customer_phone);
+  
+  if (orderMeta.serviceMode === "delivery") {
+    line("Adresse  : " + order.customer_address);
+  }
+
+  line(repeat("-", LINE_WIDTH));
 
   // Items
   items.forEach(function (item) {
-    printer
-      .style("b")
-      .text(item.quantity + " x " + item.name)
-      .style("normal");
+    push(ESC, 0x21, 0x08); // bold
+    line(item.quantity + " x " + item.name);
+    push(ESC, 0x21, 0x00); // normal
     
     item.options.forEach(function (opt) {
       opt = opt || {};
       var extra = Number(safeGet(opt, "extraPrice", 0));
       var extraText = extra > 0 ? " (+" + money(extra) + " MAD)" : "";
-      printer.text("  + " + String(safeGet(opt, "name", "")) + extraText);
+      line("  + " + String(safeGet(opt, "name", "")) + extraText);
     });
     
-    // Price aligned to the right
+    // Price right-aligned
     var priceStr = money(item.lineTotal) + " MAD";
-    printer.align("rt").text(priceStr).align("lt");
-    printer.text(""); // blank line
+    push(ESC, 0x61, 0x02); // right align
+    line(priceStr);
+    push(ESC, 0x61, 0x00); // left align
+    push(0x0A); // blank line
   });
 
   // Totals
-  printer
-    .text(repeat("-", LINE_WIDTH))
-    .text(rightAlign("Sous-total :", money(subtotal) + " MAD"));
-
+  line(repeat("-", LINE_WIDTH));
+  line(rightAlign("Sous-total :", money(subtotal) + " MAD"));
+  
   if (deliveryFee > 0) {
-    printer.text(rightAlign("Livraison  :", money(deliveryFee) + " MAD"));
+    line(rightAlign("Livraison  :", money(deliveryFee) + " MAD"));
   }
+  
+  push(ESC, 0x21, 0x08); // bold
+  line(rightAlign("TOTAL      :", money(total) + " MAD"));
+  push(ESC, 0x21, 0x00); // normal
+  line(repeat("-", LINE_WIDTH));
 
-  printer
-    .style("b")
-    .text(rightAlign("TOTAL      :", money(total) + " MAD"))
-    .style("normal")
-    .text(repeat("-", LINE_WIDTH));
+  // Footer - centered
+  push(ESC, 0x61, 0x01); // center align
+  line("Merci et a bientot !");
 
-  // Footer
-  printer
-    .align("ct")
-    .text("Merci et a bientot !")
-    .feed(3)
-    .cut();
+  // Feed 4 lines and partial cut
+  push(ESC, 0x64, 0x04); // feed 4 lines
+  push(GS, 0x56, 0x01);  // partial cut
 
-  return printer;
+  return Buffer.from(bytes);
 }
 
-// ─── Print Function ───────────────────────────────────────────────────────────
+// ─── Raw Printing via batch helper ────────────────────────────────────────────
 
-function printReceipt(order) {
+async function printRawBytes(buffer, label) {
+  // Write buffer to temp file
+  var tempFile = path.join(os.tmpdir(), "faceburger-" + label + "-" + Date.now() + ".prn");
+  await fs.writeFile(tempFile, buffer);
+
+  // Use the batch helper script
+  var batchPath = path.join(__dirname, "print-raw.bat");
+  
   return new Promise(function (resolve, reject) {
-    try {
-      var device = new escpos.Windows(PRINTER_NAME);
-      var printer = new escpos.Printer(device, { encoding: "CP850" });
+    var child = spawn(batchPath, [PRINTER_NAME, tempFile], {
+      stdio: ["ignore", "pipe", "pipe"],
+    });
 
-      device.open(function (err) {
-        if (err) {
-          return reject(err);
-        }
+    var output = "";
+    child.stdout.on("data", function (c) { output += c.toString(); });
+    child.stderr.on("data", function (c) { output += c.toString(); });
 
-        try {
-          buildReceipt(printer, order);
-          device.close();
-          resolve();
-        } catch (printErr) {
-          device.close();
-          reject(printErr);
-        }
-      });
-    } catch (err) {
-      reject(err);
-    }
+    child.on("close", function (code) {
+      // Clean up temp file after a short delay
+      setTimeout(function () {
+        fs.unlink(tempFile).catch(function () {});
+      }, 500);
+      
+      if (code === 0) {
+        resolve();
+      } else {
+        reject(new Error("Failed to print raw bytes. Output: " + output.trim()));
+      }
+    });
+
+    child.on("error", reject);
   });
 }
 
@@ -243,9 +365,18 @@ async function processOrder(order) {
   order = normalizeOrderRow(order);
   console.log("[printer-listener] Printing order #" + order.id + "...");
 
-  await printReceipt(order);
-  await markPrinted(order.id);
+  // Print kitchen ticket first
+  var kitchenBuffer = buildEscPosKitchen(order);
+  await printRawBytes(kitchenBuffer, "kitchen-" + order.id);
   
+  // Wait a bit between prints
+  await wait(500);
+  
+  // Print customer receipt
+  var receiptBuffer = buildEscPosReceipt(order);
+  await printRawBytes(receiptBuffer, "receipt-" + order.id);
+
+  await markPrinted(order.id);
   console.log("[printer-listener] Printed order #" + order.id + " successfully.");
 }
 
