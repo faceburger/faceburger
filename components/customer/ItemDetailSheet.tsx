@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { X } from "lucide-react";
 import { useTranslations } from "next-intl";
@@ -23,6 +23,9 @@ export function ItemDetailSheet({ item, locale, onClose }: Props) {
   const [quantity, setQuantity] = useState(1);
   const [selected, setSelected] = useState<SelectedOptions>({});
   const [sheetEntered, setSheetEntered] = useState(false);
+
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   const loc = locale as "fr" | "ar" | "en";
   const isOpen = !!item;
@@ -66,6 +69,26 @@ export function ItemDetailSheet({ item, locale, onClose }: Props) {
       cancelAnimationFrame(raf2);
     };
   }, [item]);
+
+  // Map system back (Android back / iOS swipe-back) to closing the sheet instead of leaving the site
+  useEffect(() => {
+    if (!item) return;
+
+    const handlePopState = () => {
+      onCloseRef.current();
+    };
+
+    window.history.pushState({ fbItemSheet: true }, "");
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      window.removeEventListener("popstate", handlePopState);
+      const st = window.history.state as { fbItemSheet?: boolean } | null;
+      if (st?.fbItemSheet === true) {
+        window.history.back();
+      }
+    };
+  }, [item?.id]);
 
   function getOptionPrice(): number {
     if (!item) return 0;
