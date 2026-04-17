@@ -367,7 +367,9 @@ export function CheckoutClient({ locale, whatsappNumber, settings }: { locale: s
 
   return (
     <div className="min-h-screen bg-white pb-8 pt-[env(safe-area-inset-top)] dark:bg-[#242526]">
-      <CheckoutHero />
+      <div className="public-menu">
+        <CheckoutHero locale={locale} settings={settings} />
+      </div>
       <StepProgress activeStep={activeStep} totalSteps={totalSteps} />
 
       <div className={`${pad} mx-auto w-full max-w-[480px] pt-5`}>
