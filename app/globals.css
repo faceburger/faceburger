@@ -53,6 +53,22 @@ html.dark body {
   --menu-font-scale: 1.1;
 }
 
+.public-menu .hero-no-scale {
+  --menu-font-scale: 1;
+}
+
 .public-menu :where(h1, h2, h3, h4, h5, h6, p, span, a, button, label, li) {
   font-size: calc(1em * var(--menu-font-scale)) !important;
+}
+
+.public-menu .menu-category-title {
+  font-size: 28px !important;
+}
+
+.public-menu .hero-brand-name {
+  font-size: 50px !important;
+}
+
+.public-menu .hero-brand-menu {
+  font-size: 36px !important;
 }

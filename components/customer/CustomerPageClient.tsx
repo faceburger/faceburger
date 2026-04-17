@@ -66,7 +66,7 @@ export function CustomerPageClient({ locale, menu, settings }: Props) {
           COVER — always full viewport width (exception to content column)
       ──────────────────────────────────────────────── */}
       <div
-        className="w-full"
+        className="hero-no-scale w-full"
         style={{
           position: "relative",
           width: "100%",
@@ -97,6 +97,7 @@ export function CustomerPageClient({ locale, menu, settings }: Props) {
             style={{ transform: "translateY(14px)" }}
           >
             <span
+              className="hero-brand-name"
               style={{
                 fontWeight: 900,
                 fontSize: 50,
@@ -109,7 +110,7 @@ export function CustomerPageClient({ locale, menu, settings }: Props) {
               {RESTAURANT_NAME}
             </span>
             <span
-              className="mt-1"
+              className="hero-brand-menu mt-1"
               style={{
                 fontWeight: 900,
                 fontSize: 36,
@@ -299,7 +300,7 @@ export function CustomerPageClient({ locale, menu, settings }: Props) {
           >
             <div className="px-4 pt-3 pb-[18px] flex items-center gap-3">
               <div className="w-1 rounded-full self-stretch" style={{ background: "#1877F2", minHeight: 28 }} />
-              <h2 className="text-[22px] font-extrabold text-[#1C1E21] dark:text-[#e4e6eb]">
+              <h2 className="menu-category-title text-[28px] font-extrabold text-[#1C1E21] dark:text-[#e4e6eb]">
                 {getCategoryName(category)}
               </h2>
             </div>
