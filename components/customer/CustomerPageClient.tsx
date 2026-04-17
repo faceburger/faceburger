@@ -60,7 +60,7 @@ export function CustomerPageClient({ locale, menu, settings }: Props) {
     "w-full max-w-[480px] lg:max-w-[1200px] mx-auto";
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#242526]">
+    <div className="public-menu min-h-screen bg-white dark:bg-[#242526]">
 
       {/* ────────────────────────────────────────────────
           COVER — always full viewport width (exception to content column)

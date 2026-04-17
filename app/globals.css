@@ -47,3 +47,12 @@ html.dark body {
   background: #e4e6eb;
   border-radius: 2px;
 }
+
+/* Public menu wide typography scale (cards, sheets, modals, footer, etc.) */
+.public-menu {
+  --menu-font-scale: 1.1;
+}
+
+.public-menu :where(h1, h2, h3, h4, h5, h6, p, span, a, button, label, li) {
+  font-size: calc(1em * var(--menu-font-scale)) !important;
+}
