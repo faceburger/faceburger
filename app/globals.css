@@ -96,6 +96,11 @@ html.dark body {
 
 .public-menu .hero-no-scale .hero-menu-hours .hero-hours-caption {
   text-wrap: balance;
+  color: #ffffff !important;
+}
+
+.public-menu .hero-no-scale .hero-menu-hours .hero-hours-time {
+  color: #ffffff !important;
 }
 
 .public-menu .hero-no-scale .hero-lang-toggle {

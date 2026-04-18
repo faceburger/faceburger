@@ -129,14 +129,14 @@ export function PublicMenuHero({
           >
             {loc === "ar" ? (
               <div className="flex max-w-full flex-col items-center" dir="rtl">
-                <div className="hero-hours-caption text-white/85">أوقات الطلب</div>
+                <div className="hero-hours-caption text-white">أوقات الطلب</div>
                 <div className="hero-hours-time mt-0.5 text-white tabular-nums">
                   {orderingHoursLabel}
                 </div>
               </div>
             ) : (
               <>
-                <div className="hero-hours-caption text-white/85">
+                <div className="hero-hours-caption text-white">
                   {loc === "en" ? "Ordering" : "Commande"}
                 </div>
                 <div className="hero-hours-time mt-0.5 text-white tabular-nums">
