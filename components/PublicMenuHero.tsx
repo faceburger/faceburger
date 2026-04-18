@@ -120,45 +120,44 @@ export function PublicMenuHero({
 
       <div className="absolute inset-x-0 top-0 z-50">
         <div
-          className={`${contentMax} flex w-full min-w-0 items-center gap-1 px-2 pt-3 sm:gap-2 sm:px-4 sm:pt-3.5`}
+          className={`${contentMax} hero-top-bar-row flex w-full min-w-0 items-center gap-2 px-3 pt-3 sm:gap-3 sm:px-4 sm:pt-3.5`}
         >
           <div className="min-w-0 flex-1">
             <div
-              className="flex max-w-full min-w-0 items-start gap-1.5 rounded-2xl px-2 py-1.5 sm:gap-2 sm:px-3 sm:py-1.5"
-              style={{
-                background: "rgba(0,0,0,0.30)",
-                border: "1px solid rgba(255,255,255,0.22)",
-                backdropFilter: "blur(10px)",
-                WebkitBackdropFilter: "blur(10px)",
-                color: "#ffffff",
-              }}
+              className="hero-hours-pill flex max-w-full min-w-0 items-center gap-2.5 rounded-2xl border border-white/25 bg-black/45 px-3 py-2.5 shadow-[0_4px_20px_rgba(0,0,0,0.25)] backdrop-blur-md sm:gap-3 sm:px-3.5 sm:py-3"
             >
               <Clock
-                className="mt-0.5 h-3 w-3 shrink-0 text-white sm:mt-px sm:h-3.5 sm:w-3.5"
+                className="hero-hours-clock shrink-0 text-white"
                 strokeWidth={2}
+                aria-hidden
               />
-              <span
-                className="hero-hours-label min-w-0 break-words leading-snug"
-                style={{
-                  fontWeight: 700,
-                  color: "rgba(255,255,255,0.92)",
-                  letterSpacing: "0.01em",
-                }}
-              >
-                {loc === "ar"
-                  ? `أوقات الطلب: ${orderingHoursLabel}`
-                  : loc === "en"
-                    ? `Ordering: ${orderingHoursLabel}`
-                    : `Commande: ${orderingHoursLabel}`}
-              </span>
+              <div className="min-w-0 flex-1">
+                {loc === "ar" ? (
+                  <div className="min-w-0 text-end" dir="rtl">
+                    <div className="hero-hours-caption text-white/80">أوقات الطلب</div>
+                    <div className="hero-hours-time mt-0.5 text-white tabular-nums">
+                      {orderingHoursLabel}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="min-w-0">
+                    <div className="hero-hours-caption text-white/80">
+                      {loc === "en" ? "Ordering" : "Commande"}
+                    </div>
+                    <div className="hero-hours-time mt-0.5 text-white tabular-nums">
+                      {orderingHoursLabel}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
-          <div className="flex shrink-0 items-center justify-end gap-0.5 sm:gap-2">
+          <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-2">
             <button
               type="button"
               onClick={openMaps}
-              className="hero-icon-btn flex h-8 w-8 shrink-0 items-center justify-center active:opacity-85 transition-opacity sm:h-[38px] sm:w-[38px]"
+              className="hero-icon-btn flex size-11 shrink-0 touch-manipulation items-center justify-center active:opacity-85 transition-opacity sm:size-[44px]"
               style={{
                 background: "rgba(255,255,255,0.15)",
                 backdropFilter: "blur(10px)",
@@ -169,12 +168,12 @@ export function PublicMenuHero({
               }}
               aria-label="Google Maps"
             >
-              <MapPin className="h-[15px] w-[15px] sm:h-[18px] sm:w-[18px]" strokeWidth={2.25} />
+              <MapPin className="hero-bar-icon" strokeWidth={2.25} />
             </button>
 
             <a
               href={PHONE_HREF}
-              className="hero-icon-btn flex h-8 w-8 shrink-0 items-center justify-center active:opacity-85 transition-opacity sm:h-[38px] sm:w-[38px]"
+              className="hero-icon-btn flex size-11 shrink-0 touch-manipulation items-center justify-center active:opacity-85 transition-opacity sm:size-[44px]"
               style={{
                 background: "rgba(255,255,255,0.15)",
                 backdropFilter: "blur(10px)",
@@ -185,13 +184,13 @@ export function PublicMenuHero({
               }}
               aria-label={`Appeler ${restaurantPhone}`}
             >
-              <Phone className="h-[15px] w-[15px] sm:h-[18px] sm:w-[18px]" strokeWidth={2.25} />
+              <Phone className="hero-bar-icon" strokeWidth={2.25} />
             </a>
 
             <button
               type="button"
               onClick={toggleTheme}
-              className="hero-icon-btn flex h-8 w-8 shrink-0 items-center justify-center active:opacity-85 transition-opacity sm:h-[38px] sm:w-[38px]"
+              className="hero-icon-btn flex size-11 shrink-0 touch-manipulation items-center justify-center active:opacity-85 transition-opacity sm:size-[44px]"
               style={{
                 background: "rgba(255,255,255,0.15)",
                 backdropFilter: "blur(10px)",
@@ -203,9 +202,9 @@ export function PublicMenuHero({
               aria-label={theme === "dark" ? "Light mode" : "Dark mode"}
             >
               {theme === "dark" ? (
-                <Sun className="h-[15px] w-[15px] sm:h-[18px] sm:w-[18px]" />
+                <Sun className="hero-bar-icon" />
               ) : (
-                <Moon className="h-[15px] w-[15px] sm:h-[18px] sm:w-[18px]" />
+                <Moon className="hero-bar-icon" />
               )}
             </button>
 
@@ -213,7 +212,7 @@ export function PublicMenuHero({
               <button
                 type="button"
                 onClick={() => setLangOpen((v) => !v)}
-                className="hero-lang-toggle flex shrink-0 items-center gap-0.5 px-1.5 py-1 font-semibold sm:gap-1 sm:px-[11px] sm:py-1.5"
+                className="hero-lang-toggle flex h-11 min-w-[3.25rem] shrink-0 touch-manipulation items-center justify-center gap-1 px-2.5 font-semibold sm:min-w-[3.5rem] sm:px-3"
                 style={{
                   background: "rgba(255,255,255,0.15)",
                   backdropFilter: "blur(10px)",
@@ -224,7 +223,7 @@ export function PublicMenuHero({
                 }}
               >
                 {currentLocale.toUpperCase()}
-                <ChevronDown className="h-3 w-3 sm:h-[13px] sm:w-[13px]" />
+                <ChevronDown className="hero-lang-chevron size-4 shrink-0" />
               </button>
 
               {langOpen && (
