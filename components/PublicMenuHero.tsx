@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { ChevronDown, MapPin, Clock, Phone, Sun, Moon } from "lucide-react";
+import { ChevronDown, MapPin, Phone, Sun, Moon } from "lucide-react";
 import { useTranslations, useLocale } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { useTheme } from "@/components/ThemeProvider";
@@ -66,7 +66,7 @@ export function PublicMenuHero({
       style={{
         position: "relative",
         width: "100%",
-        height: 200,
+        height: 240,
         overflow: "hidden",
       }}
     >
@@ -84,13 +84,13 @@ export function PublicMenuHero({
         style={{ background: "rgba(0, 0, 0, 0.22)" }}
       />
 
-      <div className="absolute inset-0 flex items-center justify-center">
+      <div className="absolute inset-0 flex items-center justify-center px-3">
         <div
-          className="flex flex-col items-center"
-          style={{ transform: "translateY(14px)" }}
+          className="flex max-w-full flex-col items-center"
+          style={{ transform: "translateY(28px)" }}
         >
           <span
-            className="hero-brand-name"
+            className="hero-brand-name text-center"
             style={{
               fontWeight: 900,
               fontSize: 50,
@@ -103,7 +103,7 @@ export function PublicMenuHero({
             {restaurantName}
           </span>
           <span
-            className="hero-brand-menu mt-1"
+            className="hero-brand-menu mt-1 text-center"
             style={{
               fontWeight: 900,
               fontSize: 36,
@@ -115,45 +115,43 @@ export function PublicMenuHero({
           >
             Menu
           </span>
+
+          <div
+            className="hero-menu-hours mt-3 flex max-w-full flex-col items-center gap-0.5 text-center sm:mt-3.5"
+            role="status"
+            aria-label={
+              loc === "ar"
+                ? `أوقات الطلب ${orderingHoursLabel}`
+                : loc === "en"
+                  ? `Ordering ${orderingHoursLabel}`
+                  : `Commande ${orderingHoursLabel}`
+            }
+          >
+            {loc === "ar" ? (
+              <div className="flex max-w-full flex-col items-center" dir="rtl">
+                <div className="hero-hours-caption text-white/85">أوقات الطلب</div>
+                <div className="hero-hours-time mt-0.5 text-white tabular-nums">
+                  {orderingHoursLabel}
+                </div>
+              </div>
+            ) : (
+              <>
+                <div className="hero-hours-caption text-white/85">
+                  {loc === "en" ? "Ordering" : "Commande"}
+                </div>
+                <div className="hero-hours-time mt-0.5 text-white tabular-nums">
+                  {orderingHoursLabel}
+                </div>
+              </>
+            )}
+          </div>
         </div>
       </div>
 
       <div className="absolute inset-x-0 top-0 z-50">
         <div
-          className={`${contentMax} hero-top-bar-row flex w-full min-w-0 items-center gap-2 px-3 pt-3 sm:gap-3 sm:px-4 sm:pt-3.5`}
+          className={`${contentMax} hero-top-bar-row flex w-full min-w-0 items-center justify-end gap-1.5 px-3 pt-3 sm:gap-2 sm:px-4 sm:pt-3.5`}
         >
-          <div className="min-w-0 flex-1">
-            <div
-              className="hero-hours-pill flex max-w-full min-w-0 items-center gap-2.5 rounded-2xl border border-white/25 bg-black/45 px-3 py-2.5 shadow-[0_4px_20px_rgba(0,0,0,0.25)] backdrop-blur-md sm:gap-3 sm:px-3.5 sm:py-3"
-            >
-              <Clock
-                className="hero-hours-clock shrink-0 text-white"
-                strokeWidth={2}
-                aria-hidden
-              />
-              <div className="min-w-0 flex-1">
-                {loc === "ar" ? (
-                  <div className="min-w-0 text-end" dir="rtl">
-                    <div className="hero-hours-caption text-white/80">أوقات الطلب</div>
-                    <div className="hero-hours-time mt-0.5 text-white tabular-nums">
-                      {orderingHoursLabel}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="min-w-0">
-                    <div className="hero-hours-caption text-white/80">
-                      {loc === "en" ? "Ordering" : "Commande"}
-                    </div>
-                    <div className="hero-hours-time mt-0.5 text-white tabular-nums">
-                      {orderingHoursLabel}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          <div className="flex shrink-0 items-center justify-end gap-1.5 sm:gap-2">
             <button
               type="button"
               onClick={openMaps}
@@ -269,7 +267,6 @@ export function PublicMenuHero({
                 </>
               )}
             </div>
-          </div>
         </div>
       </div>
     </div>

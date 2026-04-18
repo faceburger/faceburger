@@ -94,9 +94,8 @@ html.dark body {
   font-variant-numeric: tabular-nums !important;
 }
 
-.public-menu .hero-no-scale .hero-hours-clock {
-  width: clamp(1.125rem, 4.5vw, 1.375rem) !important;
-  height: clamp(1.125rem, 4.5vw, 1.375rem) !important;
+.public-menu .hero-no-scale .hero-menu-hours .hero-hours-caption {
+  text-wrap: balance;
 }
 
 .public-menu .hero-no-scale .hero-lang-toggle {
