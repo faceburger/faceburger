@@ -72,3 +72,39 @@ html.dark body {
 .public-menu .hero-brand-menu {
   font-size: 36px !important;
 }
+
+/* Hero top bar: compact on small screens so hours + buttons fit; wrap instead of clipping */
+.public-menu .hero-no-scale .hero-hours-label {
+  font-size: 10px !important;
+  line-height: 1.3 !important;
+}
+@media (min-width: 380px) {
+  .public-menu .hero-no-scale .hero-hours-label {
+    font-size: 11px !important;
+  }
+}
+@media (min-width: 640px) {
+  .public-menu .hero-no-scale .hero-hours-label {
+    font-size: 12px !important;
+  }
+}
+
+.public-menu .hero-no-scale .hero-lang-toggle {
+  font-size: 11px !important;
+}
+@media (min-width: 380px) {
+  .public-menu .hero-no-scale .hero-lang-toggle {
+    font-size: 12px !important;
+  }
+}
+@media (min-width: 640px) {
+  .public-menu .hero-no-scale .hero-lang-toggle {
+    font-size: 13px !important;
+  }
+}
+
+/* Icon-only controls: kill menu font scaling on the button box */
+.public-menu .hero-no-scale .hero-icon-btn {
+  font-size: 0 !important;
+  line-height: 0 !important;
+}

@@ -118,13 +118,13 @@ export function PublicMenuHero({
         </div>
       </div>
 
-      <div className="absolute inset-x-0 top-0 z-10">
+      <div className="absolute inset-x-0 top-0 z-50">
         <div
-          className={`${contentMax} flex w-full min-w-0 items-center gap-1.5 px-3 pt-3.5 sm:gap-2 sm:px-4`}
+          className={`${contentMax} flex w-full min-w-0 items-center gap-1 px-2 pt-3 sm:gap-2 sm:px-4 sm:pt-3.5`}
         >
           <div className="min-w-0 flex-1">
             <div
-              className="inline-flex max-w-full min-w-0 items-center gap-1.5 rounded-full px-2.5 py-1.5 sm:gap-2 sm:px-3"
+              className="flex max-w-full min-w-0 items-start gap-1.5 rounded-2xl px-2 py-1.5 sm:gap-2 sm:px-3 sm:py-1.5"
               style={{
                 background: "rgba(0,0,0,0.30)",
                 border: "1px solid rgba(255,255,255,0.22)",
@@ -133,16 +133,17 @@ export function PublicMenuHero({
                 color: "#ffffff",
               }}
             >
-              <Clock size={14} className="shrink-0" style={{ color: "#ffffff" }} />
+              <Clock
+                className="mt-0.5 h-3 w-3 shrink-0 text-white sm:mt-px sm:h-3.5 sm:w-3.5"
+                strokeWidth={2}
+              />
               <span
-                className="min-w-0 truncate"
+                className="hero-hours-label min-w-0 break-words leading-snug"
                 style={{
-                  fontSize: 12,
                   fontWeight: 700,
                   color: "rgba(255,255,255,0.92)",
                   letterSpacing: "0.01em",
                 }}
-                title={orderingHoursLabel}
               >
                 {loc === "ar"
                   ? `أوقات الطلب: ${orderingHoursLabel}`
@@ -153,14 +154,12 @@ export function PublicMenuHero({
             </div>
           </div>
 
-          <div className="flex shrink-0 items-center justify-end gap-1 sm:gap-2">
+          <div className="flex shrink-0 items-center justify-end gap-0.5 sm:gap-2">
             <button
               type="button"
               onClick={openMaps}
-              className="flex items-center justify-center active:opacity-85 transition-opacity"
+              className="hero-icon-btn flex h-8 w-8 shrink-0 items-center justify-center active:opacity-85 transition-opacity sm:h-[38px] sm:w-[38px]"
               style={{
-                width: 38,
-                height: 38,
                 background: "rgba(255,255,255,0.15)",
                 backdropFilter: "blur(10px)",
                 WebkitBackdropFilter: "blur(10px)",
@@ -170,15 +169,13 @@ export function PublicMenuHero({
               }}
               aria-label="Google Maps"
             >
-              <MapPin size={18} strokeWidth={2.25} />
+              <MapPin className="h-[15px] w-[15px] sm:h-[18px] sm:w-[18px]" strokeWidth={2.25} />
             </button>
 
             <a
               href={PHONE_HREF}
-              className="flex items-center justify-center active:opacity-85 transition-opacity"
+              className="hero-icon-btn flex h-8 w-8 shrink-0 items-center justify-center active:opacity-85 transition-opacity sm:h-[38px] sm:w-[38px]"
               style={{
-                width: 38,
-                height: 38,
                 background: "rgba(255,255,255,0.15)",
                 backdropFilter: "blur(10px)",
                 WebkitBackdropFilter: "blur(10px)",
@@ -188,16 +185,14 @@ export function PublicMenuHero({
               }}
               aria-label={`Appeler ${restaurantPhone}`}
             >
-              <Phone size={18} strokeWidth={2.25} />
+              <Phone className="h-[15px] w-[15px] sm:h-[18px] sm:w-[18px]" strokeWidth={2.25} />
             </a>
 
             <button
               type="button"
               onClick={toggleTheme}
-              className="flex items-center justify-center active:opacity-85 transition-opacity"
+              className="hero-icon-btn flex h-8 w-8 shrink-0 items-center justify-center active:opacity-85 transition-opacity sm:h-[38px] sm:w-[38px]"
               style={{
-                width: 38,
-                height: 38,
                 background: "rgba(255,255,255,0.15)",
                 backdropFilter: "blur(10px)",
                 WebkitBackdropFilter: "blur(10px)",
@@ -207,37 +202,40 @@ export function PublicMenuHero({
               }}
               aria-label={theme === "dark" ? "Light mode" : "Dark mode"}
             >
-              {theme === "dark" ? <Sun size={18} /> : <Moon size={18} />}
+              {theme === "dark" ? (
+                <Sun className="h-[15px] w-[15px] sm:h-[18px] sm:w-[18px]" />
+              ) : (
+                <Moon className="h-[15px] w-[15px] sm:h-[18px] sm:w-[18px]" />
+              )}
             </button>
 
             <div className="relative">
               <button
                 type="button"
                 onClick={() => setLangOpen((v) => !v)}
-                className="flex items-center gap-1 font-semibold"
+                className="hero-lang-toggle flex shrink-0 items-center gap-0.5 px-1.5 py-1 font-semibold sm:gap-1 sm:px-[11px] sm:py-1.5"
                 style={{
                   background: "rgba(255,255,255,0.15)",
                   backdropFilter: "blur(10px)",
                   WebkitBackdropFilter: "blur(10px)",
                   border: "1px solid rgba(255,255,255,0.32)",
                   borderRadius: 8,
-                  padding: "6px 11px",
                   color: "#ffffff",
-                  fontSize: 13,
                 }}
               >
                 {currentLocale.toUpperCase()}
-                <ChevronDown size={13} />
+                <ChevronDown className="h-3 w-3 sm:h-[13px] sm:w-[13px]" />
               </button>
 
               {langOpen && (
                 <>
                   <div
-                    className="fixed inset-0"
-                    style={{ zIndex: -1 }}
+                    className="fixed inset-0 z-40"
+                    aria-hidden
                     onClick={() => setLangOpen(false)}
                   />
                   <div
+                    className="z-50"
                     style={{
                       position: "absolute",
                       top: "calc(100% + 6px)",
