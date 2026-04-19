@@ -93,47 +93,46 @@ export async function createTemplate(formData: FormData) {
 
 export async function updateTemplate(id: number, formData: FormData) {
   const visibilityCondition = parseCondition(formData);
+  // Capture old French name BEFORE updating so we can match cloned option_groups
+  const [oldTmpl] = await db.select().from(addonTemplates).where(eq(addonTemplates.id, id));
+  const oldTmplFr = oldTmpl ? (oldTmpl.name as { fr: string }).fr : null;
+
+  const newName = {
+    fr: (formData.get("name_fr") as string).trim(),
+    ar: (formData.get("name_ar") as string).trim(),
+    en: (formData.get("name_en") as string).trim(),
+  };
+  const required   = formData.get("required") === "true";
+  const minSelect  = parseInt((formData.get("min_select")      as string) ?? "0");
+  const maxSelect  = parseInt((formData.get("max_select")      as string) ?? "1");
+  const freeSel    = parseInt((formData.get("free_selections") as string) ?? "0");
+
   await db
     .update(addonTemplates)
-    .set({
-      name: {
-        fr: (formData.get("name_fr") as string).trim(),
-        ar: (formData.get("name_ar") as string).trim(),
-        en: (formData.get("name_en") as string).trim(),
-      },
-      required: formData.get("required") === "true",
-      minSelect: parseInt((formData.get("min_select") as string) ?? "0"),
-      maxSelect: parseInt((formData.get("max_select") as string) ?? "1"),
-      freeSelections: parseInt((formData.get("free_selections") as string) ?? "0"),
-      visibilityCondition,
-    })
+    .set({ name: newName, required, minSelect, maxSelect, freeSelections: freeSel, visibilityCondition })
     .where(eq(addonTemplates.id, id));
-  // Sync ALL settings to every applied option_group cloned from this template
-  const [tmpl] = await db.select().from(addonTemplates).where(eq(addonTemplates.id, id));
-  if (tmpl) {
-    const tmplFr = (tmpl.name as { fr: string }).fr;
-    const required   = formData.get("required") === "true";
-    const minSelect  = parseInt((formData.get("min_select")      as string) ?? "0");
-    const maxSelect  = parseInt((formData.get("max_select")      as string) ?? "1");
-    const freeSel    = parseInt((formData.get("free_selections") as string) ?? "0");
+
+  if (oldTmplFr) {
+    // Sync ALL settings (including renamed name) to every cloned option_group
     await db.execute(
       sql`UPDATE option_groups SET
+        name                 = ${JSON.stringify(newName)}::jsonb,
         required             = ${required},
         min_select           = ${minSelect},
         max_select           = ${maxSelect},
         free_selections      = ${freeSel},
         visibility_condition = ${visibilityCondition ? JSON.stringify(visibilityCondition) : null}::jsonb
-      WHERE name->>'fr' = ${tmplFr}`
+      WHERE name->>'fr' = ${oldTmplFr}`
     );
 
-    // Also re-sync all option prices from the template to every applied group
+    // Re-sync all option prices from the template to every applied group
     const tmplOptions = await db
       .select()
       .from(addonTemplateOptions)
       .where(eq(addonTemplateOptions.templateId, id));
 
     const appliedGroups = await db.execute(
-      sql`SELECT id FROM option_groups WHERE name->>'fr' = ${tmplFr}`
+      sql`SELECT id FROM option_groups WHERE name->>'fr' = ${newName.fr}`
     );
     for (const row of appliedGroups.rows as { id: number }[]) {
       for (const tOpt of tmplOptions) {
