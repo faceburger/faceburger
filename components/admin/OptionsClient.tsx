@@ -75,6 +75,9 @@ function TemplatesTab({
   const [removedItems, setRemovedItems] = useState<Set<number>>(new Set());
   const [applying, setApplying] = useState(false);
 
+  type ConfirmState = { message: string; onConfirm: () => void } | null;
+  const [confirm, setConfirm] = useState<ConfirmState>(null);
+
   // Inline option adding per template
   const [addingOptFor, setAddingOptFor] = useState<number | null>(null);
   const [editOptId, setEditOptId] = useState<number | null>(null);
@@ -104,16 +107,18 @@ function TemplatesTab({
     refresh();
   }
 
-  async function handleDeleteTemplate(id: number, name: string) {
-    if (!confirm(`Supprimer le modèle "${name}" ?`)) return;
-    await deleteTemplate(id);
-    refresh();
+  function handleDeleteTemplate(id: number, name: string) {
+    setConfirm({
+      message: `Supprimer le modèle "${name}" ?`,
+      onConfirm: async () => { await deleteTemplate(id); refresh(); },
+    });
   }
 
-  async function handleDuplicateTemplate(id: number, name: string) {
-    if (!confirm(`Dupliquer le modèle "${name}" ?`)) return;
-    await duplicateTemplate(id);
-    refresh();
+  function handleDuplicateTemplate(id: number, name: string) {
+    setConfirm({
+      message: `Dupliquer le modèle "${name}" ?`,
+      onConfirm: async () => { await duplicateTemplate(id); refresh(); },
+    });
   }
 
   async function moveTemplate(id: number, dir: -1 | 1) {
@@ -259,6 +264,30 @@ function TemplatesTab({
         <div className="rounded-2xl bg-white p-10 text-center" style={{ border: "2px dashed #E4E6EB" }}>
           <p className="text-sm font-medium mb-1" style={{ color: "#1C1E21" }}>Aucun modèle</p>
           <p className="text-sm" style={{ color: "#65676B" }}>Créez un modèle comme "Frites" ou "Boisson" puis appliquez-le à plusieurs articles en un clic.</p>
+        </div>
+      )}
+
+      {confirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center" style={{ background: "rgba(0,0,0,0.35)" }}>
+          <div className="rounded-2xl bg-white p-6 flex flex-col gap-5 shadow-xl" style={{ minWidth: 320, border: "1px solid #E4E6EB" }}>
+            <p className="text-sm font-semibold" style={{ color: "#1C1E21" }}>{confirm.message}</p>
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={() => setConfirm(null)}
+                className="rounded-xl px-4 py-2 text-sm font-medium"
+                style={{ background: "#F0F2F5", color: "#1C1E21" }}
+              >
+                Annuler
+              </button>
+              <button
+                onClick={() => { confirm.onConfirm(); setConfirm(null); }}
+                className="rounded-xl px-4 py-2 text-sm font-semibold text-white"
+                style={{ background: "#1877F2" }}
+              >
+                Confirmer
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
