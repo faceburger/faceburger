@@ -171,18 +171,7 @@ export function CustomerPageClient({ locale, menu, settings }: Props) {
               paddingBottom: 8,
             }}
           >
-            © {new Date().getFullYear()} {RESTAURANT_NAME} &mdash; Tous droits réservés
-          </p>
-          <p
-            style={{
-              fontSize: 11,
-              color: "rgba(255,255,255,0.34)",
-              textAlign: "center",
-              letterSpacing: "0.02em",
-              paddingBottom: 12,
-            }}
-          >
-            powered by{" "}
+            © {new Date().getFullYear()} {RESTAURANT_NAME} &mdash; Développé par{" "}
             <a
               href="https://scanini.ma"
               target="_blank"
