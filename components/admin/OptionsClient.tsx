@@ -1,12 +1,13 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Plus, Trash2, Pencil, Zap } from "lucide-react";
+import { Plus, Trash2, Pencil, Zap, Copy } from "lucide-react";
 import {
   getTemplates,
   createTemplate,
   updateTemplate,
   deleteTemplate,
+  duplicateTemplate,
   addTemplateOption,
   updateTemplateOption,
   deleteTemplateOption,
@@ -105,6 +106,11 @@ function TemplatesTab({
 
   async function handleDeleteTemplate(id: number) {
     await deleteTemplate(id);
+    refresh();
+  }
+
+  async function handleDuplicateTemplate(id: number) {
+    await duplicateTemplate(id);
     refresh();
   }
 
@@ -289,6 +295,9 @@ function TemplatesTab({
                   className="rounded-xl p-2 hover:bg-[#F0F2F5] transition-colors"
                 >
                   <Pencil size={15} color="#65676B" />
+                </button>
+                <button onClick={() => handleDuplicateTemplate(tmpl.id)} className="rounded-xl p-2 hover:bg-[#F0F2F5] transition-colors" title="Dupliquer">
+                  <Copy size={15} color="#65676B" />
                 </button>
                 <button onClick={() => handleDeleteTemplate(tmpl.id)} className="rounded-xl p-2 hover:bg-red-50 transition-colors">
                   <Trash2 size={15} color="#E53935" />

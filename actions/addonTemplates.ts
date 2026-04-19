@@ -152,6 +152,38 @@ export async function deleteTemplate(id: number) {
   revalidatePath("/regrubecaf/options");
 }
 
+export async function duplicateTemplate(id: number) {
+  const [tmpl] = await db.select().from(addonTemplates).where(eq(addonTemplates.id, id));
+  if (!tmpl) return;
+
+  const tmplOpts = await db.select().from(addonTemplateOptions).where(eq(addonTemplateOptions.templateId, id)).orderBy(asc(addonTemplateOptions.sortOrder));
+  const totalTemplates = await db.select({ id: addonTemplates.id }).from(addonTemplates);
+  const name = tmpl.name as { fr: string; ar: string; en: string };
+
+  const [newTmpl] = await db.insert(addonTemplates).values({
+    name: { fr: `Copie de ${name.fr}`, ar: name.ar, en: name.en },
+    required: tmpl.required,
+    minSelect: tmpl.minSelect,
+    maxSelect: tmpl.maxSelect,
+    freeSelections: tmpl.freeSelections ?? 0,
+    sortOrder: totalTemplates.length,
+    visibilityCondition: tmpl.visibilityCondition ?? null,
+  }).returning({ id: addonTemplates.id });
+
+  if (tmplOpts.length > 0) {
+    await db.insert(addonTemplateOptions).values(
+      tmplOpts.map((o, i) => ({
+        templateId: newTmpl.id,
+        name: o.name as { fr: string; ar: string; en: string },
+        extraPrice: o.extraPrice as string,
+        sortOrder: i,
+      }))
+    );
+  }
+
+  revalidatePath("/regrubecaf/options");
+}
+
 export async function addTemplateOption(templateId: number, formData: FormData) {
   const existing = await db.select({ id: addonTemplateOptions.id }).from(addonTemplateOptions).where(eq(addonTemplateOptions.templateId, templateId));
   const newName = {
