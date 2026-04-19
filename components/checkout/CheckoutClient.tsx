@@ -200,11 +200,8 @@ export function CheckoutClient({ locale, whatsappNumber, settings }: { locale: s
     }
     setSubmitError("");
     setSubmitting(true);
-    const isMobile = /Mobi|Android|iPhone/i.test(navigator.userAgent);
-    const popup = !isMobile ? window.open("", "_blank") : null;
 
     if (!whatsappNumber?.trim()) {
-      if (popup && !popup.closed) popup.close();
       setSubmitError("Numéro WhatsApp non configuré. Vérifiez les paramètres admin.");
       setSubmitting(false);
       return;
@@ -312,12 +309,9 @@ export function CheckoutClient({ locale, whatsappNumber, settings }: { locale: s
 
       localStorage.setItem("fb_customer", JSON.stringify({ fullName, countryCode, phone }));
       clearCart();
-      if (isMobile) window.location.href = url;
-      else if (popup) popup.location.href = url;
-      else window.location.href = url;
+      window.location.href = url;
       router.replace("/");
     } catch (err) {
-      if (popup && !popup.closed) popup.close();
       const msg = err instanceof Error ? err.message : String(err);
       if (msg.includes("ORDERING_CLOSED")) {
         setSubmitError(`Les commandes sont fermées. Horaires : ${formatWindowLabel(orderingWindow)}.`);
