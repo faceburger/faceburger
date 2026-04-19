@@ -104,12 +104,14 @@ function TemplatesTab({
     refresh();
   }
 
-  async function handleDeleteTemplate(id: number) {
+  async function handleDeleteTemplate(id: number, name: string) {
+    if (!confirm(`Supprimer le modèle "${name}" ?`)) return;
     await deleteTemplate(id);
     refresh();
   }
 
-  async function handleDuplicateTemplate(id: number) {
+  async function handleDuplicateTemplate(id: number, name: string) {
+    if (!confirm(`Dupliquer le modèle "${name}" ?`)) return;
     await duplicateTemplate(id);
     refresh();
   }
@@ -296,10 +298,10 @@ function TemplatesTab({
                 >
                   <Pencil size={15} color="#65676B" />
                 </button>
-                <button onClick={() => handleDuplicateTemplate(tmpl.id)} className="rounded-xl p-2 hover:bg-[#F0F2F5] transition-colors" title="Dupliquer">
+                <button onClick={() => handleDuplicateTemplate(tmpl.id, tmpl.name.fr)} className="rounded-xl p-2 hover:bg-[#F0F2F5] transition-colors" title="Dupliquer">
                   <Copy size={15} color="#65676B" />
                 </button>
-                <button onClick={() => handleDeleteTemplate(tmpl.id)} className="rounded-xl p-2 hover:bg-red-50 transition-colors">
+                <button onClick={() => handleDeleteTemplate(tmpl.id, tmpl.name.fr)} className="rounded-xl p-2 hover:bg-red-50 transition-colors">
                   <Trash2 size={15} color="#E53935" />
                 </button>
               </>
