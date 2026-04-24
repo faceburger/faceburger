@@ -308,9 +308,11 @@ export function CheckoutClient({ locale, whatsappNumber, settings }: { locale: s
       const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
 
       localStorage.setItem("fb_customer", JSON.stringify({ fullName, countryCode, phone }));
-      clearCart();
       window.location.href = url;
-      router.replace("/");
+      setTimeout(() => {
+        clearCart();
+        router.replace("/");
+      }, 500);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       if (msg.includes("ORDERING_CLOSED")) {
